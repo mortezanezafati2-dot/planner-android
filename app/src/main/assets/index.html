@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#5b5bd6">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="پلنر من">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<title>پلنر من</title>
+<style>
+:root{
+ --bg:#f5f7fb;--panel:#fff;--panel2:#f8fafc;--text:#172033;--muted:#667085;--border:#e5e7eb;
+ --primary:#5b5bd6;--primary2:#4646b8;--success:#16875a;--warning:#b7791f;--danger:#c24141;--info:#2879c7;
+ --shadow:0 10px 30px rgba(20,30,60,.06);--r:16px;--sidebar:248px
+}
+[data-theme="dark"]{
+ --bg:#0d1117;--panel:#151b24;--panel2:#10161e;--text:#eef2f7;--muted:#9aa5b5;--border:#273140;
+ --primary:#8585ff;--primary2:#6e6ee8;--shadow:0 10px 30px rgba(0,0,0,.2)
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,"Vazirmatn","Segoe UI",sans-serif;font-size:14px}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.app{display:flex;min-height:100vh}.sidebar{width:var(--sidebar);position:fixed;inset:0 0 0 auto;background:var(--panel);border-left:1px solid var(--border);padding:20px 14px;z-index:20;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;padding:8px 10px 22px;font-weight:800;font-size:18px}.brand-mark{width:38px;height:38px;border-radius:12px;background:var(--primary);color:white;display:grid;place-items:center}
+.nav{display:grid;gap:4px;overflow:auto;min-height:0;padding:2px 2px 8px 0;scrollbar-width:thin;scrollbar-color:transparent transparent}.nav:hover{scrollbar-color:var(--border) transparent}.nav::-webkit-scrollbar{width:6px}.nav::-webkit-scrollbar-track{background:transparent}.nav::-webkit-scrollbar-thumb{background:transparent;border-radius:99px}.nav:hover::-webkit-scrollbar-thumb{background:var(--border)}.nav::-webkit-scrollbar-thumb:hover{background:var(--muted)}.nav button{border:0;background:transparent;color:var(--muted);text-align:right;padding:11px 12px;border-radius:10px;display:flex;gap:10px;align-items:center;width:100%}.nav button:hover,.nav button.active{background:var(--panel2);color:var(--text)}.nav button.active{font-weight:700;box-shadow:inset -3px 0 var(--primary)}
+.sidebar-foot{margin-top:auto;color:var(--muted);font-size:11px;padding:12px}.main{margin-right:var(--sidebar);width:calc(100% - var(--sidebar));padding:24px;max-width:1600px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.title h1{margin:0;font-size:25px}.title p{margin:6px 0 0;color:var(--muted)}.actions{display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--border);background:var(--panel);color:var(--text);padding:9px 13px;border-radius:10px}.btn:hover{background:var(--panel2)}.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn.danger{color:var(--danger)}.icon-btn{width:40px;height:40px;padding:0;display:grid;place-items:center}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:17px;box-shadow:var(--shadow)}.card h3{margin:0 0 12px;font-size:15px}.muted{color:var(--muted)}.small{font-size:12px}.stat{font-size:27px;font-weight:800;margin-top:8px}.progress{height:8px;background:var(--border);border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:var(--primary);border-radius:inherit}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.stack{display:grid;gap:10px}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{padding:4px 8px;border-radius:99px;background:var(--panel2);border:1px solid var(--border);font-size:11px}.p1{color:#fff;background:#c24141}.p2{color:#fff;background:#b7791f}.p3{color:#fff;background:#2879c7}.p4{color:#fff;background:#7a8493}
+.task{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}.task:last-child{border-bottom:0}.check{width:21px;height:21px;border:1.5px solid var(--muted);border-radius:7px;display:grid;place-items:center;flex:none}.check.done{background:var(--success);border-color:var(--success);color:#fff}.task.done .task-title{text-decoration:line-through;color:var(--muted)}.task-body{flex:1;min-width:0}.drag-handle{cursor:grab;color:var(--muted);font-size:18px;padding:2px 5px;user-select:none}.drag-handle:active{cursor:grabbing}.task.dragging,.habit-card.dragging{opacity:.45}.reorder-actions{display:flex;gap:4px;align-items:center}.reorder-actions .btn{padding:5px 8px;min-width:32px}.task-title{font-weight:650}.task-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}.link{color:var(--primary);cursor:pointer}.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:12px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.search{min-width:220px;flex:1}.input,.select,.textarea{width:100%;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:10px;padding:10px}.textarea{min-height:110px;resize:vertical}.field{display:grid;gap:6px}.field label{font-size:12px;color:var(--muted)}.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.48);display:none;align-items:center;justify-content:center;z-index:50;padding:18px}.modal-back.open{display:flex}.modal{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:20px}.modal h2{margin:0 0 16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-grid .full{grid-column:1/-1}.toast{position:fixed;left:22px;bottom:22px;background:#111827;color:#fff;padding:11px 14px;border-radius:10px;opacity:0;transform:translateY(8px);transition:.2s;z-index:80}.toast.show{opacity:1;transform:none}.focus-card{background:linear-gradient(135deg,var(--primary),#7676ee);color:white;border:0}.focus-card .muted{color:rgba(255,255,255,.78)}.date-picker-field{display:flex;gap:8px;align-items:center}.date-picker-field .input{flex:1}.date-picker{grid-template-columns:repeat(7,1fr)}.date-cell{min-height:42px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer;font:inherit}.date-cell:hover,.date-cell.selected{background:var(--primary);color:#fff}.date-picker .cal-head{text-align:center;padding:8px 4px}.date-picker-field .btn{white-space:nowrap}.date-picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;z-index:100;padding:18px}.date-picker-box{width:min(680px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.cal-head,.cal-cell{padding:9px;border:1px solid var(--border);border-radius:10px;min-height:72px}.cal-head{min-height:auto;text-align:center;color:var(--muted);font-size:12px;background:var(--panel2);white-space:nowrap}.cal-cell{background:var(--panel);color:var(--text);cursor:pointer;width:100%;text-align:right}.cal-cell:hover{background:var(--panel2)}.cal-cell.today{outline:2px solid var(--primary)}.cal-cell .num{font-weight:700}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin-left:4px}.install-card{background:linear-gradient(135deg,var(--panel),var(--panel2));border-color:var(--primary)}.install-status{padding:12px;border-radius:12px;background:var(--panel2);border:1px solid var(--border)}.install-ok{color:var(--success)}.install-note{line-height:1.9}.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.heat i{aspect-ratio:1;border-radius:4px;background:var(--border)}.heat i[data-v="1"]{background:#b9b9f7}.heat i[data-v="2"]{background:#8e8eea}.heat i[data-v="3"]{background:#6565dc}.heat i[data-v="4"]{background:#4646b8}.quote{font-size:17px;line-height:1.9;font-weight:700}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px;border-bottom:1px solid var(--border);text-align:right}.table th{color:var(--muted);font-size:12px}.mobile-nav{display:none}.fab{display:none}.kbd{border:1px solid var(--border);border-bottom-width:2px;padding:2px 6px;border-radius:6px;font-size:11px;background:var(--panel2)}
+@media(max-width:900px){.sidebar{transform:translateX(100%);transition:.2s}.sidebar.open{transform:none}.main{margin-right:0;width:100%;padding:16px;padding-bottom:80px}.g4,.g3{grid-template-columns:1fr 1fr}.mobile-nav{display:flex;position:fixed;bottom:0;inset-inline:0;background:var(--panel);border-top:1px solid var(--border);z-index:30;justify-content:space-around;padding:7px}.mobile-nav button{border:0;background:none;color:var(--muted);font-size:11px}.fab{display:grid;place-items:center;position:fixed;left:18px;bottom:66px;width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;border:0;z-index:31;font-size:24px}.g2,.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.topbar{align-items:flex-start}.title h1{font-size:21px}}
+@media(max-width:520px){.g4,.g3{grid-template-columns:1fr}.actions .hide-sm{display:none}.cal-cell{min-height:58px;padding:6px;font-size:11px}}
+
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modalBack" class="modal-back"><div id="modal" class="modal"></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+
+/* ---------- Jalali calendar ---------- */
+const JALALI_WEEK=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+const JALALI_MONTH=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function div(a,b){return Math.floor(a/b)}
+function jalaliToGregorian(jy,jm,jd){
+ let jy2=jy+1595;
+ let days=-355668 + 365*jy2 + div(jy2,33)*8 + div((jy2%33)+3,4) + jd + (jm<7 ? (jm-1)*31 : (jm-7)*30+186);
+ let gy=400*div(days,146097); days%=146097;
+ if(days>36524){gy+=100*div(--days,36524);days%=36524;if(days>=365)days++;}
+ gy+=4*div(days,1461); days%=1461;
+ if(days>365){gy+=div(days-1,365);days=(days-1)%365;}
+ const gd=days+1, gmd=[31,28,31,30,31,30,31,31,30,31,30,31];
+ if((gy%4===0&&gy%100!==0)||(gy%400===0))gmd[1]=29;
+ let gm=0,rem=gd; while(gm<12&&rem>gmd[gm]){rem-=gmd[gm];gm++;}
+ return [gy,gm+1,rem];
+}
+function gregorianToJalali(gy,gm,gd){
+ let g_y=gy-1600,g_m=gm-1,g_d=gd-1;
+ const gmd=[31,28,31,30,31,30,31,31,30,31,30,31];
+ let gDay=365*g_y+div(g_y+3,4)-div(g_y+99,100)+div(g_y+399,400);
+ for(let i=0;i<g_m;i++)gDay+=gmd[i];
+ if(g_m>1&&((gy%4===0&&gy%100!==0)||(gy%400===0)))gDay++;
+ gDay+=g_d;
+ let jDay=gDay-79,jy=979+33*div(jDay,12053); jDay%=12053; jy+=4*div(jDay,1461); jDay%=1461;
+ if(jDay>=366){jy+=div(jDay-1,365);jDay=(jDay-1)%365;}
+ const jm=jDay<186?1+div(jDay,31):7+div(jDay-186,30), jd=1+(jDay<186?jDay%31:(jDay-186)%30);
+ return [jy,jm,jd];
+}
+function nowJ(){const d=new Date(),j=gregorianToJalali(d.getFullYear(),d.getMonth()+1,d.getDate());return {jy:j[0],jm:j[1],jd:j[2],iso:d.toISOString().slice(0,10)}}
+function jDateStr(j=nowJ()){return `${j.jy}/${String(j.jm).padStart(2,'0')}/${String(j.jd).padStart(2,'0')}`}
+function faNum(x){return String(x).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}
+function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function shiftJalaliMonth(jy,jm,delta){let total=jy*12+(jm-1)+delta;return {jy:Math.floor(total/12),jm:(total%12)+1}}
+function jalaliMonthLength(jy,jm){const next=jm===12?{jy:jy+1,jm:1}:{jy,jm:jm+1};const a=jalaliToGregorian(jy,jm,1),b=jalaliToGregorian(next.jy,next.jm,1);return Math.round((Date.UTC(b[0],b[1]-1,b[2])-Date.UTC(a[0],a[1]-1,a[2]))/86400000)}
+function jalaliMonthStartWeekday(jy,jm){const g=jalaliToGregorian(jy,jm,1);return (new Date(g[0],g[1]-1,g[2]).getDay()+1)%7}
+/* ---------- IndexedDB ---------- */
+const STORES=['tasks','goals','projects','habits','habitEntries','journal','events','reviews','affirmations','tags','settings'];
+let db=null, storageMode='indexeddb';
+const memStore=Object.fromEntries(STORES.map(k=>[k,[]]));
+function openDB(){return new Promise((res)=>{try{if(!window.indexedDB)throw Error('IndexedDB unavailable');const r=indexedDB.open('personal_planner_db',2);r.onupgradeneeded=()=>{db=r.result;STORES.forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s,{keyPath:'id'})})};r.onsuccess=()=>{db=r.result;storageMode='indexeddb';res(db)};r.onerror=()=>{storageMode='local';res(null)};r.onblocked=()=>{storageMode='local';res(null)}}catch(e){storageMode='local';res(null)}})}
+function tx(store,mode='readonly'){return db.transaction(store,mode).objectStore(store)}
+function localRead(store){try{const raw=localStorage.getItem('planner_'+store);return raw?JSON.parse(raw):memStore[store]}catch(e){return memStore[store]}}
+function localWrite(store,arr){memStore[store]=arr;try{localStorage.setItem('planner_'+store,JSON.stringify(arr))}catch(e){}}
+function getAll(store){if(storageMode!=='indexeddb')return Promise.resolve(localRead(store));return new Promise((res,rej)=>{let r=tx(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function getOne(store,id){if(storageMode!=='indexeddb')return Promise.resolve(localRead(store).find(x=>x.id===id));return new Promise((res,rej)=>{let r=tx(store).get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function put(store,obj){if(storageMode!=='indexeddb'){const a=localRead(store).filter(x=>x.id!==obj.id);a.push(obj);localWrite(store,a);return Promise.resolve(obj)}return new Promise((res,rej)=>{let r=tx(store,'readwrite').put(obj);r.onsuccess=()=>res(obj);r.onerror=()=>rej(r.error)})}
+function del(store,id){if(storageMode!=='indexeddb'){localWrite(store,localRead(store).filter(x=>x.id!==id));return Promise.resolve()}return new Promise((res,rej)=>{let r=tx(store,'readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function clearStore(s){if(storageMode!=='indexeddb'){localWrite(s,[]);return}return new Promise((res,rej)=>{let r=tx(s,'readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+const S={tasks:[],goals:[],projects:[],habits:[],habitEntries:[],journal:[],events:[],reviews:[],affirmations:[],tags:[],settings:{}};
+async function loadAll(){for(const k of STORES){if(k==='settings'){const a=await getAll(k);S.settings=Object.fromEntries(a.map(x=>[x.key,x.value]))}else S[k]=await getAll(k)} await ensureItemOrders();}
+async function ensureItemOrders(){
+ const taskArr=S.tasks.filter(t=>t.status!=='archived').sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));
+ let changed=false; taskArr.forEach((t,i)=>{const o=i+1;if(t.order!==o){t.order=o;changed=true}}); if(changed) for(const t of taskArr) await put('tasks',t);
+ const habitArr=[...S.habits].sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0)); changed=false; habitArr.forEach((h,i)=>{const o=i+1;if(h.order!==o){h.order=o;changed=true}}); if(changed) for(const h of habitArr) await put('habits',h);
+}
+async function saveSetting(key,value){await put('settings',{id:key,key,value});S.settings[key]=value}
+
+/* ---------- App state ---------- */
+let page='dashboard', searchQ='', editId=null, calendarOffset=0, deferredInstallPrompt=null;
+const defaultSettings={appName:'پلنر من',userName:'',theme:'system',accent:'#5b5bd6',weekStart:6,onboardingDone:false,affirmRandom:true,widgets:['today','focus','goals','habits','weekly','affirmation','upcoming','stats']};
+function settings(){return {...defaultSettings,...S.settings}}
+function applyTheme(){const s=settings();document.documentElement.dataset.theme=s.theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):s.theme;document.documentElement.style.setProperty('--primary',s.accent)}
+function taskOccursOn(t,date){if(t.recurrence==='daily')return !!t.startDate && t.startDate<=date;return t.date===date}
+function taskStatusOn(t,date){if(t.recurrence==='daily')return (t.completionDates||{})[date]==='done'?'done':'todo';return t.status||'todo'}
+function tasksForDate(date){return S.tasks.filter(t=>taskOccursOn(t,date)).map(t=>({...t,status:taskStatusOn(t,date),_displayDate:date}))}
+function todayTasks(){return tasksForDate(jDateStr())}
+function pct(a,b){return b?Math.round(a/b*100):0}
+function priorityLabel(p){return {P1:'بسیار مهم',P2:'مهم',P3:'معمولی',P4:'کم‌اهمیت'}[p]||'معمولی'}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function openModal(html){document.getElementById('modal').innerHTML=html;document.getElementById('modalBack').classList.add('open')}
+function closeModal(){document.getElementById('modalBack').classList.remove('open');editId=null}
+document.getElementById('modalBack').addEventListener('click',e=>{if(e.target.id==='modalBack')closeModal()});
+
+/* ---------- Rendering ---------- */
+const icons={dashboard:'⌂',today:'✓',daily:'☀',weekly:'▦',monthly:'◫',goals:'◎',projects:'◈',tasks:'☑',habits:'♢',calendar:'▣',journal:'✎',weeklyReview:'↻',monthlyReview:'↻',stats:'▥',archive:'□',settings:'⚙',install:'⇩'};
+const navItems=[['daily','امروز'],['weekly','برنامه هفتگی'],['monthly','برنامه ماهانه'],['goals','اهداف'],['projects','پروژه‌ها'],['tasks','وظایف'],['habits','عادت‌ها'],['calendar','تقویم'],['journal','یادداشت روزانه'],['weeklyReview','مرور هفتگی'],['monthlyReview','مرور ماهانه'],['stats','آمار و عملکرد'],['settings','تنظیمات']];
+function shell(content){
+ const s=settings(), j=nowJ(), d=new Date();
+ document.title=s.appName;
+ document.getElementById('app').innerHTML=`<aside class="sidebar" id="sidebar">
+  <div class="brand"><div class="brand-mark">✓</div><span>${esc(s.appName)}</span></div>
+  <nav class="nav">${navItems.map(([id,n])=>`<button class="${page===id?'active':''}" data-nav="${id}"><span>${icons[id]}</span>${n}</button>`).join('')}</nav>
+  <div class="sidebar-foot">${s.userName?`سلام ${esc(s.userName)} 👋<br>`:''}نسخه آفلاین · داده‌ها روی دستگاه شما</div>
+ </aside>
+ <main class="main"><div class="topbar"><div class="title"><h1>${pageTitle()}</h1><p>${faNum(jDateStr(j))} · ${JALALI_WEEK[(d.getDay()+1)%7]}</p></div><div class="actions"><button class="btn ${page==='dashboard'?'primary':''}" onclick="goPage('dashboard')">⌂ داشبورد</button>${deferredInstallPrompt&&!isStandalone()?`<button class="btn primary hide-sm" onclick="installPWA()">⇩ نصب برنامه</button>`:``}<button class="btn hide-sm" onclick="quickCapture()">＋ ثبت سریع</button><button class="btn icon-btn" onclick="toggleSidebar()">☰</button></div></div>${content}</main>
+ <div class="mobile-nav">${[['dashboard','خانه'],['daily','امروز'],['calendar','تقویم'],['goals','اهداف'],['more','بیشتر']].map(x=>`<button onclick="${x[0]==='more'?'toggleSidebar()':`goPage('${x[0]}')`}">${x[0]==='more'?'☰':icons[x[0]]}<br>${x[1]}</button>`).join('')}</div>
+ <button class="fab" onclick="quickCapture()">＋</button>`;
+ document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>goPage(b.dataset.nav)); applyTheme();
+}
+function pageTitle(){return page==='dashboard'?'داشبورد':Object.fromEntries(navItems.map(x=>[x[0],x[1]]))[page]||'داشبورد'}
+function toggleSidebar(){document.getElementById('sidebar')?.classList.toggle('open')}
+function goPage(p){page=p;searchQ='';render()}
+
+function render(){
+ let c='';
+ if(page==='dashboard')c=dashboard();
+ else if(page==='daily')c=daily();
+ else if(page==='weekly')c=weekly();
+ else if(page==='monthly')c=monthly();
+ else if(page==='goals')c=goals();
+ else if(page==='projects')c=projects();
+ else if(page==='tasks')c=tasksPage();
+ else if(page==='habits')c=habits();
+ else if(page==='calendar')c=calendar();
+ else if(page==='install')c=installPage();
+ else if(page==='journal')c=journal();
+ else if(page==='weeklyReview')c=review(false);
+ else if(page==='monthlyReview')c=review(true);
+ else if(page==='stats')c=stats();
+ else if(page==='archive')c=archive();
+ else if(page==='settings')c=settingsPage();
+ shell(c);
+}
+
+/* ---------- Dashboard ---------- */
+function affirmation(){
+ let a=S.affirmations.filter(x=>x.active!==false); if(!a.length)return 'لازم نیست کامل باشی؛ فقط قدم بعدی را انجام بده.';
+ let idx=settings().affirmRandom?Math.floor(Date.now()/86400000)%a.length:0;return a[idx].text;
+}
+function taskList(items,compact=false,sortable=false){
+ if(!items.length)return `<div class="empty">چیزی برای نمایش نیست.</div>`;
+ const arr=[...items].sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));
+ return `<div>${arr.map((t,i)=>{const d=t._displayDate||t.date;const recurring=t.recurrence==='daily';return `<div class="task ${t.status==='done'?'done':''}" ${sortable?`draggable="true" ondragstart="dragTaskStart(event,'${t.id}')" ondragover="dragTaskOver(event)" ondrop="dropTask(event,'${t.id}')"`:''}>
+ ${sortable?`<span class="drag-handle" title="برای جابه‌جایی بکش و رها کن">⠿</span>`:''}
+ <button class="check ${t.status==='done'?'done':''}" onclick="toggleTask('${t.id}','${d||''}')">${t.status==='done'?'✓':''}</button>
+ <div class="task-body"><div class="task-title">${esc(t.title)}</div><div class="task-meta"><span class="chip ${t.priority?.toLowerCase()||'p3'}">${priorityLabel(t.priority)}</span>${recurring?`<span class="chip">همه‌روزه</span>`:''}${t.projectId?`<span class="chip">پروژه</span>`:''}${t.time?`<span class="chip">${esc(t.time)}</span>`:''}</div></div>
+ ${sortable?`<div class="reorder-actions"><button class="btn" title="بالاتر" onclick="moveTask('${t.id}',-1)">↑</button><button class="btn" title="پایین‌تر" onclick="moveTask('${t.id}',1)">↓</button></div>`:''}<button class="btn icon-btn" onclick="editTask('${t.id}')">⋯</button></div>`}).join('')}</div>`;
+}
+function normalizeTaskOrder(){const arr=S.tasks.filter(t=>t.status!=='archived').sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));arr.forEach((t,i)=>t.order=i+1);return arr}
+let draggedTaskId=null;
+function dragTaskStart(e,id){draggedTaskId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',id);e.currentTarget.classList.add('dragging')}
+function dragTaskOver(e){e.preventDefault();e.dataTransfer.dropEffect='move'}
+async function dropTask(e,targetId){e.preventDefault();const sourceId=draggedTaskId||e.dataTransfer.getData('text/plain');document.querySelectorAll('.task.dragging').forEach(x=>x.classList.remove('dragging'));draggedTaskId=null;if(!sourceId||sourceId===targetId)return;const arr=S.tasks.filter(t=>t.status!=='archived').sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));const si=arr.findIndex(x=>x.id===sourceId),ti=arr.findIndex(x=>x.id===targetId);if(si<0||ti<0)return;const [m]=arr.splice(si,1);arr.splice(ti,0,m);arr.forEach((t,i)=>t.order=i+1);for(const t of arr)await put('tasks',t);await loadAll();render()}
+async function moveTask(id,dir){const arr=S.tasks.filter(t=>t.status!=='archived').sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));const i=arr.findIndex(x=>x.id===id),j=i+dir;if(i<0||j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];arr.forEach((t,k)=>t.order=k+1);for(const t of arr)await put('tasks',t);await loadAll();render()}
+
+function dashboard(){
+ const tt=todayTasks(),done=tt.filter(x=>x.status==='done').length, goals=S.goals.filter(g=>g.status!=='archived'), hs=S.habits;
+ const upcoming=S.tasks.filter(t=>t.recurrence!=='daily'&&t.status!=='done'&&t.date&&t.date>=jDateStr()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+ const w=settings().widgets||defaultSettings.widgets;
+ return `<div class="grid g4">
+  ${w.includes('today')?`<div class="card"><div class="muted">وضعیت امروز</div><div class="stat">${faNum(done)} / ${faNum(tt.length)}</div><div class="progress"><i style="width:${pct(done,tt.length)}%"></i></div><div class="small muted" style="margin-top:7px">${faNum(pct(done,tt.length))}٪ انجام شده</div></div>`:''}
+  ${w.includes('goals')?`<div class="card"><div class="muted">اهداف فعال</div><div class="stat">${faNum(goals.length)}</div><div class="small muted">چیزهایی که اکنون دنبال می‌کنی</div></div>`:''}
+  ${w.includes('habits')?`<div class="card"><div class="muted">عادت‌ها</div><div class="stat">${faNum(hs.length)}</div><div class="small muted">برای تداوم، نه کمال</div></div>`:''}
+  ${w.includes('upcoming')?`<div class="card"><div class="muted">در راه</div><div class="stat">${faNum(upcoming.length)}</div><div class="small muted">کار نزدیک بعدی</div></div>`:''}
+ </div>
+ <div class="grid g2" style="margin-top:14px">
+  ${w.includes('focus')?`<div class="card focus-card"><div class="row"><div><div class="muted">تمرکز اصلی امروز</div><div class="quote">${esc(S.settings.focusToday||'هنوز تمرکز اصلی را مشخص نکرده‌ای.')}</div></div><button class="btn" onclick="setFocus()">تغییر</button></div></div>`:''}
+  ${w.includes('affirmation')?`<div class="card"><div class="muted">یادآوری امروز</div><div class="quote">${esc(affirmation())}</div><div style="margin-top:10px"><button class="btn" onclick="goPage('settings')">مدیریت جملات</button></div></div>`:''}
+ </div>
+ <div class="grid g2" style="margin-top:14px">
+  <div class="card"><div class="row"><h3>کارهای امروز</h3><button class="btn primary" onclick="newTask()">＋ کار</button></div>${taskList(tt,false,true)}</div>
+  ${w.includes('upcoming')?`<div class="card"><div class="row"><h3>در راه</h3><button class="btn" onclick="goPage('calendar')">تقویم</button></div>${taskList(upcoming,true)}</div>`:''}
+ </div>
+ ${w.includes('weekly')?`<div class="card" style="margin-top:14px"><div class="row"><div><h3>مرور هفتگی</h3><div class="muted small">یک نگاه کوتاه به این هفته.</div></div><button class="btn" onclick="goPage('weeklyReview')">شروع مرور</button></div></div>`:''}`;
+}
+
+/* ---------- PWA installation ---------- */
+function isStandalone(){return window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true;}
+function installEnvironment(){const secure=window.isSecureContext===true,canPrompt=!!deferredInstallPrompt;if(isStandalone())return {label:'برنامه نصب شده است.',ok:true,detail:'پلنر اکنون در حالت برنامه مستقل اجرا می‌شود.'};if(canPrompt)return {label:'نصب آماده است.',ok:true,detail:'مرورگر نصب برنامه را پشتیبانی می‌کند و دکمه نصب در دسترس است.'};if(!secure)return {label:'برای نصب، فایل باید از HTTPS یا localhost باز شود.',ok:false,detail:'اگر فایل را مستقیم با file:// باز کرده‌ای، برنامه همچنان قابل استفاده است اما نصب PWA در این حالت انجام نمی‌شود.'};return {label:'نصب از منوی مرورگر در دسترس است.',ok:true,detail:'در Chrome یا Edge معمولاً گزینه Install / نصب را از نوار آدرس یا منوی مرورگر می‌بینی.'};}
+function installPage(){const st=installEnvironment();return `<div class="grid g2"><div class="card install-card"><h3>نصب «پلنر من» به‌عنوان برنامه</h3><p class="install-note muted">بعد از نصب، برنامه در یک پنجره مستقل باز می‌شود و می‌توانی از صفحه اصلی موبایل یا منوی برنامه‌های سیستم آن را اجرا کنی.</p><div class="install-status"><b class="${st.ok?'install-ok':''}">${esc(st.label)}</b><div class="small muted" style="margin-top:6px">${esc(st.detail)}</div></div><div class="actions" style="margin-top:14px"><button class="btn primary" onclick="installPWA()">⇩ نصب برنامه</button><button class="btn" onclick="showInstallHelp()">راهنمای نصب</button></div></div><div class="card"><h3>وضعیت</h3><div class="stack"><div class="row"><span>حالت مستقل</span><b>${isStandalone()?'فعال':'غیرفعال'}</b></div><div class="row"><span>HTTPS / localhost</span><b>${window.isSecureContext?'فعال':'غیرفعال'}</b></div><div class="row"><span>درخواست نصب داخلی</span><b>${deferredInstallPrompt?'آماده':'فعلاً در دسترس نیست'}</b></div></div><p class="small muted install-note" style="margin-top:14px">برای نصب واقعی PWA، مرورگر باید برنامه را از HTTPS یا localhost ببیند.</p></div></div>`;}
+async function installPWA(){if(isStandalone())return showToast('برنامه از قبل نصب شده است.');if(deferredInstallPrompt){const prompt=deferredInstallPrompt;deferredInstallPrompt=null;try{const result=await prompt.prompt();showToast(result.outcome==='accepted'?'برنامه نصب شد.':'درخواست نصب لغو شد.');}catch(e){showInstallHelp();}render();return;}showInstallHelp();}
+function showInstallHelp(){openModal(`<h2>راهنمای نصب</h2><div class="stack"><div class="card"><b>💻 ویندوز / کامپیوتر</b><p class="install-note muted">در Chrome یا Edge، وقتی برنامه از HTTPS یا localhost باز باشد، گزینه Install / نصب را از نوار آدرس یا منوی مرورگر انتخاب کن.</p></div><div class="card"><b>📱 اندروید</b><p class="install-note muted">در Chrome از منوی مرورگر گزینه Install app یا Add to Home screen را انتخاب کن. اگر دکمه نصب داخل برنامه فعال باشد، همان دکمه هم درخواست نصب را باز می‌کند.</p></div><div class="card"><b>🍎 آیفون / آیپد</b><p class="install-note muted">صفحه را در Safari باز کن، Share را بزن و Add to Home Screen را انتخاب کن.</p></div><div class="card"><b>⚠️ بازکردن مستقیم فایل</b><p class="install-note muted">اگر آدرس با file:// شروع می‌شود، برنامه برای استفاده عادی کار می‌کند اما نصب PWA ممکن نیست؛ برای نصب باید نسخه وب از HTTPS یا localhost ارائه شود.</p></div></div><div class="actions" style="margin-top:14px"><button class="btn primary" onclick="closeModal()">متوجه شدم</button></div>`);}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;render();});
+window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;render();showToast('پلنر با موفقیت نصب شد.');});
+async function registerPWA(){if(!('serviceWorker' in navigator))return;if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;try{await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(e){console.warn('PWA service worker registration failed',e);}}
+
+/* ---------- Tasks ---------- */
+function openDatePicker(inputId, initial){const val=initial||document.getElementById(inputId)?.value||jDateStr();const p=val.split('/').map(Number);const base={jy:p[0]||nowJ().jy,jm:p[1]||nowJ().jm,jd:p[2]||nowJ().jd};openDatePickerForInput(inputId,base.jy,base.jm)}
+function openDatePickerForInput(inputId,jy,jm){
+ const old=document.getElementById('datePickerOverlay');if(old)old.remove();
+ const first=jalaliToGregorian(jy,jm,1),gd=new Date(first[0],first[1]-1,first[2]),start=(gd.getDay()+1)%7,days=jalaliMonthLength(jy,jm);let cells='';for(let i=0;i<start;i++)cells+='<div></div>';for(let d=1;d<=days;d++){const ds=`${jy}/${String(jm).padStart(2,'0')}/${String(d).padStart(2,'0')}`;cells+=`<button type="button" class="date-cell ${ds===(document.getElementById(inputId)?.value||'')?'selected':''}" onclick="chooseDate('${inputId}','${ds}')">${faNum(d)}</button>`}
+ const overlay=document.createElement('div');overlay.id='datePickerOverlay';overlay.className='date-picker-overlay';overlay.innerHTML=`<div class="date-picker-box"><div class="row"><button class="btn" type="button" onclick="shiftDatePicker('${inputId}',${jy},${jm},-1)">‹</button><h2>${JALALI_MONTH[jm-1]} ${faNum(jy)}</h2><button class="btn" type="button" onclick="shiftDatePicker('${inputId}',${jy},${jm},1)">›</button></div><div class="calendar date-picker" style="margin-top:14px">${JALALI_WEEK.map(x=>`<div class="cal-head">${x}</div>`).join('')}${cells}</div><div class="actions" style="margin-top:14px"><button class="btn" type="button" onclick="chooseDate('${inputId}','${jDateStr()}')">امروز</button><button class="btn" type="button" onclick="closeDatePicker()">بستن</button></div></div>`;
+ overlay.addEventListener('click',e=>{if(e.target===overlay)closeDatePicker()});document.body.appendChild(overlay);
+}
+function shiftDatePicker(inputId,jy,jm,delta){let m=jm+delta,y=jy;if(m<1){m=12;y--}if(m>12){m=1;y++}openDatePickerForInput(inputId,y,m)}
+function closeDatePicker(){document.getElementById('datePickerOverlay')?.remove()}
+function chooseDate(inputId,date){const el=document.getElementById(inputId);if(el)el.value=date;closeDatePicker();}
+
+function taskForm(t={}){
+ const j=t.startDate||t.date||jDateStr();
+ return `<h2>${t.id?'ویرایش کار':'کار جدید'}</h2><div class="form-grid">
+ <div class="field full"><label>عنوان *</label><input id="f_title" class="input" value="${esc(t.title||'')}" autofocus></div>
+ <div class="field"><label>تاریخ شروع</label><div class="date-picker-field"><input id="f_date" class="input" value="${esc(j)}" readonly><button type="button" class="btn" onclick="openDatePicker('f_date')">انتخاب تاریخ</button></div></div>
+ <div class="field"><label>تکرار</label><select id="f_recurrence" class="select" onchange="toggleTaskRecurrenceFields()"><option value="none" ${t.recurrence!=='daily'?'selected':''}>فقط همین تاریخ</option><option value="daily" ${t.recurrence==='daily'?'selected':''}>همه‌روزه</option></select><div class="small muted" style="margin-top:6px">اگر «همه‌روزه» را انتخاب کنی، از تاریخ شروع به بعد هر روز نمایش داده می‌شود.</div></div>
+ <div class="field"><label>اولویت</label><select id="f_priority" class="select">${['P1','P2','P3','P4'].map(p=>`<option ${t.priority===p?'selected':''}>${p} · ${priorityLabel(p)}</option>`).join('')}</select></div>
+ <div class="field"><label>زمان شروع</label><input id="f_time" class="input" type="time" value="${esc(t.time||'')}"></div>
+ <div class="field"><label>مدت تخمینی (دقیقه)</label><input id="f_duration" class="input" type="number" min="0" value="${t.duration||''}"></div>
+ <div class="field"><label>پروژه</label><select id="f_project" class="select"><option value="">بدون پروژه</option>${S.projects.map(p=>`<option value="${p.id}" ${t.projectId===p.id?'selected':''}>${esc(p.title)}</option>`).join('')}</select></div>
+ <div class="field"><label>هدف مرتبط</label><select id="f_goal" class="select"><option value="">بدون هدف</option>${S.goals.map(g=>`<option value="${g.id}" ${t.goalId===g.id?'selected':''}>${esc(g.title)}</option>`).join('')}</select></div>
+ <div class="field full"><label>توضیح / یادداشت</label><textarea id="f_notes" class="textarea">${esc(t.notes||'')}</textarea></div>
+ <div class="field full"><label>تگ‌ها (با ویرگول جدا کن)</label><input id="f_tags" class="input" value="${esc((t.tags||[]).join(', '))}"></div>
+ </div><div class="actions" style="justify-content:space-between;margin-top:16px"><div>${t.id?`<button class="btn danger" onclick="deleteTask('${t.id}')">حذف وظیفه</button>`:''}</div><div class="actions" style="margin:0"><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="saveTask('${t.id||''}')">ذخیره</button></div></div>`;
+}
+function newTask(date){openModal(taskForm({date:date||jDateStr()}))}
+function editTask(id){const t=S.tasks.find(x=>x.id===id);if(t)openModal(taskForm(t))}
+async function deleteTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;const label=t.recurrence==='daily'?'این وظیفه همه‌روزه و تمام سابقه انجام آن':'این وظیفه';if(!confirm(`آیا مطمئنی می‌خواهی ${label} را حذف کنی؟ این کار قابل بازگشت نیست.`))return;await del('tasks',id);await loadAll();closeModal();showToast('وظیفه حذف شد.');render()}
+function toggleTaskRecurrenceFields(){}
+async function saveTask(id){
+ const old=S.tasks.find(x=>x.id===id), date=document.getElementById('f_date').value||jDateStr(), recurrence=document.getElementById('f_recurrence').value, nextOrder=old?.order??(Math.max(0,...S.tasks.map(x=>x.order??0))+1);
+ const obj={id:id||uid(),title:document.getElementById('f_title').value.trim(),date:recurrence==='daily'?null:date,startDate:recurrence==='daily'?date:null,recurrence,completionDates:old?.completionDates||{},priority:document.getElementById('f_priority').value.slice(0,2),time:document.getElementById('f_time').value,duration:+document.getElementById('f_duration').value||0,projectId:document.getElementById('f_project').value||null,goalId:document.getElementById('f_goal').value||null,notes:document.getElementById('f_notes').value,tags:document.getElementById('f_tags').value.split(',').map(x=>x.trim()).filter(Boolean),status:old?.status||'todo',order:nextOrder,createdAt:old?.createdAt||Date.now(),updatedAt:Date.now(),migrations:old?.migrations||[]};
+ if(!obj.title)return showToast('عنوان کار را وارد کن.');
+ if(obj.recurrence==='daily' && old?.recurrence!=='daily')obj.completionDates={};
+ if(obj.recurrence!=='daily'){delete obj.startDate;delete obj.completionDates;}
+ await put('tasks',obj);await loadAll();closeModal();showToast('کار ذخیره شد.');render();
+}
+async function toggleTask(id,date){const t=S.tasks.find(x=>x.id===id);if(!t)return;if(t.recurrence==='daily'){t.completionDates=t.completionDates||{};if(t.completionDates[date]==='done')delete t.completionDates[date];else t.completionDates[date]='done';t.updatedAt=Date.now();await put('tasks',t)}else{t.status=t.status==='done'?'todo':'done';t.completedAt=t.status==='done'?Date.now():null;await put('tasks',t)}await loadAll();render()}
+
+async function migrateTask(id){const t=S.tasks.find(x=>x.id===id);if(!t)return;openModal(`<h2>انتقال کار</h2><div class="stack"><button class="btn" onclick="doMigrate('${id}','${jDateStr()}')">امروز</button><button class="btn" onclick="doMigrate('${id}','${addJDays(nowJ(),1)}')">فردا</button><button class="btn" onclick="doMigrate('${id}','${addJDays(nowJ(),7)}')">هفته بعد</button><div class="field"><label>تاریخ دلخواه</label><input id="migDate" class="input" value="${esc(t.date||jDateStr())}"></div><button class="btn primary" onclick="doMigrate('${id}',document.getElementById('migDate').value)">انتقال</button></div>`)}
+async function doMigrate(id,date){const t=S.tasks.find(x=>x.id===id);t.migrations=[...(t.migrations||[]),{from:t.date,to:date,at:Date.now()}];t.date=date;t.status='todo';await put('tasks',t);await loadAll();closeModal();showToast('کار منتقل شد.');render()}
+function tasksPage(){
+ let arr=S.tasks.filter(t=>t.status!=='archived');if(searchQ)arr=arr.filter(t=>(t.title+' '+t.notes+' '+(t.tags||[]).join(' ')).toLowerCase().includes(searchQ.toLowerCase()));
+ arr.sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0)); return `<div class="toolbar"><input class="input search" placeholder="جست‌وجوی کارها..." value="${esc(searchQ)}" oninput="searchQ=this.value;render()"><select class="select" style="max-width:180px" onchange="filterPriority(this.value)"><option value="">همه اولویت‌ها</option>${['P1','P2','P3','P4'].map(x=>`<option>${x}</option>`).join('')}</select><button class="btn primary" onclick="newTask()">＋ کار جدید</button></div><div class="card">${taskList(arr,false,true)}</div>`;
+}
+function filterPriority(p){if(!p){render();return}const old=S.tasks;S.tasks=old.filter(x=>x.priority===p);render();S.tasks=old}
+
+/* ---------- Daily / Weekly / Monthly ---------- */
+function daily(){
+ const tt=todayTasks(), done=tt.filter(x=>x.status==='done').length;
+ return `<div class="grid g3"><div class="card"><div class="muted">کارهای امروز</div><div class="stat">${faNum(tt.length)}</div></div><div class="card"><div class="muted">انجام‌شده</div><div class="stat">${faNum(done)}</div></div><div class="card"><div class="muted">باقی‌مانده</div><div class="stat">${faNum(tt.length-done)}</div></div></div>
+ <div class="grid g2" style="margin-top:14px"><div class="card"><div class="row"><h3>برنامه امروز</h3><button class="btn primary" onclick="newTask()">＋ کار</button></div>${taskList(tt,false,true)}</div>
+ <div class="card"><h3>روز حداقلی</h3><p class="muted">اگر امروز انرژی یا زمان کمی داشتم، حداقل چه کاری کافی است؟</p><div class="row"><div>${esc(S.settings.minimumDay||'هنوز تعیین نشده')}</div><button class="btn" onclick="setMinimum()">ویرایش</button></div><hr style="border:0;border-top:1px solid var(--border);margin:18px 0"><h3>If → Then</h3>${S.settings.ifThen?`<div>${esc(S.settings.ifThen.if)} → <b>${esc(S.settings.ifThen.then)}</b></div>`:'یک برنامه شرطی ساده برای لحظه‌های سخت تعریف کن.'}<div style="margin-top:10px"><button class="btn" onclick="setIfThen()">＋ افزودن</button></div></div></div>
+ <div class="card" style="margin-top:14px"><div class="row"><h3>بازتاب روزانه</h3><button class="btn" onclick="dailyReflection()">ثبت</button></div></div>`;
+}
+function addJDays(j,n){let g=jalaliToGregorian(j.jy,j.jm,j.jd),d=new Date(g[0],g[1]-1,g[2]);d.setDate(d.getDate()+n);let x=gregorianToJalali(d.getFullYear(),d.getMonth()+1,d.getDate());return `${x[0]}/${String(x[1]).padStart(2,'0')}/${String(x[2]).padStart(2,'0')}`}
+function weekDates(){const base=nowJ();const d=new Date(...[...jalaliToGregorian(base.jy,base.jm,base.jd)].map((x,i)=>i===1?x-1:x));let wd=(d.getDay()+1)%7;d.setDate(d.getDate()-wd);return Array.from({length:7},(_,i)=>{let x=new Date(d);x.setDate(d.getDate()+i);let j=gregorianToJalali(x.getFullYear(),x.getMonth()+1,x.getDate());return `${j[0]}/${String(j[1]).padStart(2,'0')}/${String(j[2]).padStart(2,'0')}`})}
+function weekly(){const ds=weekDates();return `<div class="card"><div class="row"><div><h3>اولویت‌های هفته</h3><div class="muted small">حداکثر چند اولویت محدود و قابل اجرا.</div></div><button class="btn" onclick="setWeeklyPriorities()">ویرایش</button></div><div class="chips" style="margin-top:10px">${(S.settings.weeklyPriorities||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join('')||'<span class="muted">هنوز مشخص نشده</span>'}</div></div><div class="grid g3" style="margin-top:14px">${ds.map((d,i)=>`<div class="card"><div class="row"><h3>${JALALI_WEEK[i]}</h3><span class="small muted">${faNum(d.split('/').slice(1).join('/'))}</span></div>${taskList(tasksForDate(d),false,true)}</div>`).join('')}</div>`}
+function monthly(){const j=nowJ();return `<div class="grid g2"><div class="card"><h3>اهداف ماه</h3>${S.goals.filter(g=>g.month===`${j.jy}/${j.jm}`).map(g=>goalMini(g)).join('')||'<div class="empty">هدف ماهانه‌ای ثبت نشده.</div>'}</div><div class="card"><h3>اولویت‌های ماه</h3><div class="chips">${(S.settings.monthlyPriorities||[]).map(x=>`<span class="chip">${esc(x)}</span>`).join('')||'<span class="muted">هنوز مشخص نشده</span>'}</div><button class="btn" style="margin-top:10px" onclick="setMonthlyPriorities()">ویرایش</button></div></div><div class="card" style="margin-top:14px"><h3>Deadlineهای نزدیک</h3>${taskList(S.tasks.filter(t=>t.recurrence!=='daily'&&t.date).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,10))}</div>`}
+
+/* ---------- Goals / Projects ---------- */
+function goalMini(g){return `<div class="task"><div class="task-body"><div class="task-title">${esc(g.title)}</div><div class="progress" style="margin-top:8px"><i style="width:${g.progress||0}%"></i></div><div class="small muted" style="margin-top:5px">${faNum(g.progress||0)}٪</div></div><button class="btn" onclick="editGoal('${g.id}')">ویرایش</button></div>`}
+function goalForm(g={}){
+ return `<h2>${g.id?'ویرایش هدف':'هدف جدید'}</h2><div class="form-grid"><div class="field full"><label>عنوان *</label><input id="g_title" class="input" value="${esc(g.title||'')}"></div><div class="field"><label>سطح</label><select id="g_level" class="select">${['Vision','بلندمدت','سالانه','فصلی','ماهانه','هفتگی'].map(x=>`<option ${g.level===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Deadline</label><input id="g_deadline" class="input" value="${esc(g.deadline||'')}"></div><div class="field"><label>پیشرفت دستی</label><input id="g_progress" class="input" type="number" min="0" max="100" value="${g.progress||0}"></div><div class="field"><label>وضعیت</label><select id="g_status" class="select"><option value="active">فعال</option><option value="archived" ${g.status==='archived'?'selected':''}>آرشیو</option></select></div><div class="field full"><label>چرا مهم است؟</label><textarea id="g_reason" class="textarea">${esc(g.reason||'')}</textarea></div><div class="field full"><label>نتیجه مطلوب</label><textarea id="g_result" class="textarea">${esc(g.result||'')}</textarea></div></div><div class="actions" style="margin-top:16px"><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="saveGoal('${g.id||''}')">ذخیره</button></div>`
+}
+function goals(){let arr=S.goals.filter(g=>g.status!=='archived');return `<div class="toolbar"><button class="btn primary" onclick="newGoal()">＋ هدف</button><button class="btn" onclick="visualMap()">نمای نقشه اهداف</button></div><div class="grid g3">${arr.map(g=>`<div class="card">${goalMini(g)}<div class="small muted" style="margin-top:10px">${esc(g.level||'')}</div><div class="actions" style="margin-top:10px"><button class="btn" onclick="editGoal('${g.id}')">ویرایش</button><button class="btn danger" onclick="deleteGoal('${g.id}')">حذف</button></div></div>`).join('')||'<div class="card empty">هنوز هدفی ثبت نکرده‌ای.</div>'}</div>`}
+function newGoal(){openModal(goalForm())}function editGoal(id){const g=S.goals.find(x=>x.id===id);if(g)openModal(goalForm(g))}
+async function saveGoal(id){const old=S.goals.find(x=>x.id===id),g={id:id||uid(),title:document.getElementById('g_title').value.trim(),level:document.getElementById('g_level').value,deadline:document.getElementById('g_deadline').value,progress:Math.max(0,Math.min(100,+document.getElementById('g_progress').value||0)),status:document.getElementById('g_status').value,reason:document.getElementById('g_reason').value,result:document.getElementById('g_result').value,createdAt:old?.createdAt||Date.now()};if(!g.title)return showToast('عنوان هدف را وارد کن.');await put('goals',g);await loadAll();closeModal();showToast('هدف ذخیره شد.');render()}
+async function deleteGoal(id){if(!confirm('آیا مطمئنی می‌خواهی این هدف را حذف کنی؟ ارتباط کارهای مرتبط حفظ می‌شود.'))return;await del('goals',id);for(const t of S.tasks.filter(x=>x.goalId===id)){t.goalId=null;await put('tasks',t)}await loadAll();showToast('هدف حذف شد.');render()}
+function visualMap(){const roots=S.goals.filter(g=>g.status!=='archived');openModal(`<h2>نقشه هدف</h2><div class="stack">${roots.map(g=>`<div class="card"><b>◎ ${esc(g.title)}</b><div class="muted small">↓ پروژه‌ها</div>${S.projects.filter(p=>p.goalId===g.id).map(p=>`<div style="margin:8px 0;padding:9px;background:var(--panel2);border-radius:9px">◈ ${esc(p.title)} <span class="muted">(${S.tasks.filter(t=>t.projectId===p.id).length} کار)</span></div>`).join('')||'<div class="muted small">پروژه‌ای متصل نیست.</div>'}</div>`).join('')||'<div class="empty">هدف فعال ندارید.</div>'}</div>`)}
+function projectForm(p={}){
+ return `<h2>${p.id?'ویرایش پروژه':'پروژه جدید'}</h2><div class="form-grid"><div class="field full"><label>عنوان *</label><input id="p_title" class="input" value="${esc(p.title||'')}"></div><div class="field"><label>هدف مرتبط</label><select id="p_goal" class="select"><option value="">بدون هدف</option>${S.goals.map(g=>`<option value="${g.id}" ${p.goalId===g.id?'selected':''}>${esc(g.title)}</option>`).join('')}</select></div><div class="field"><label>Deadline</label><input id="p_deadline" class="input" value="${esc(p.deadline||'')}"></div><div class="field full"><label>توضیح</label><textarea id="p_notes" class="textarea">${esc(p.notes||'')}</textarea></div></div><div class="actions" style="margin-top:16px"><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="saveProject('${p.id||''}')">ذخیره</button></div>`
+}
+function projects(){return `<div class="toolbar"><button class="btn primary" onclick="newProject()">＋ پروژه</button></div><div class="grid g3">${S.projects.map(p=>{const ts=S.tasks.filter(t=>t.projectId===p.id),d=ts.filter(t=>t.status==='done').length;return `<div class="card"><h3>${esc(p.title)}</h3><div class="muted small">${p.goalId?'متصل به هدف':'مستقل'}</div><div class="progress" style="margin-top:12px"><i style="width:${pct(d,ts.length)}%"></i></div><div class="row small muted" style="margin-top:6px"><span>${faNum(d)} از ${faNum(ts.length)} کار</span><button class="btn" onclick="editProject('${p.id}')">ویرایش</button></div></div>`}).join('')||'<div class="card empty">هنوز پروژه‌ای ثبت نشده.</div>'}</div>`}
+function newProject(){openModal(projectForm())}function editProject(id){const p=S.projects.find(x=>x.id===id);if(p)openModal(projectForm(p))}
+async function saveProject(id){const old=S.projects.find(x=>x.id===id),p={id:id||uid(),title:document.getElementById('p_title').value.trim(),goalId:document.getElementById('p_goal').value||null,deadline:document.getElementById('p_deadline').value,notes:document.getElementById('p_notes').value,createdAt:old?.createdAt||Date.now()};if(!p.title)return showToast('عنوان پروژه را وارد کن.');await put('projects',p);await loadAll();closeModal();showToast('پروژه ذخیره شد.');render()}
+
+/* ---------- Habits ---------- */
+function habits(){const j=nowJ();const arr=[...S.habits].sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));return `<div class="toolbar"><button class="btn primary" onclick="newHabit()">＋ عادت</button><span class="small muted">برای جابه‌جایی، بلوک را بکش یا از فلش‌ها استفاده کن.</span></div><div class="grid g3">${arr.map(h=>{const done=S.habitEntries.filter(e=>e.habitId===h.id&&e.done).length;return `<div class="card habit-card" draggable="true" ondragstart="dragHabitStart(event,'${h.id}')" ondragover="dragHabitOver(event)" ondrop="dropHabit(event,'${h.id}')"><div class="row"><div class="row" style="gap:6px"><span class="drag-handle" title="برای جابه‌جایی بکش و رها کن">⠿</span><h3>${esc(h.name)}</h3></div><button class="btn" onclick="toggleHabitToday('${h.id}')">${S.habitEntries.some(e=>e.habitId===h.id&&e.date===jDateStr()&&e.done)?'✓ امروز':'ثبت امروز'}</button></div><div class="muted small">${esc(h.target||'')}</div><div class="stat">${faNum(done)}</div><div class="small muted">دفعات ثبت‌شده</div><div class="heat" style="margin-top:12px">${Array.from({length:28},(_,i)=>{const d=addJDays(j,-27+i),v=S.habitEntries.some(e=>e.habitId===h.id&&e.date===d&&e.done)?2:0;return `<i data-v="${v}"></i>`}).join('')}</div><div class="row" style="margin-top:10px"><div class="reorder-actions"><button class="btn" title="بالاتر" onclick="moveHabit('${h.id}',-1)">↑</button><button class="btn" title="پایین‌تر" onclick="moveHabit('${h.id}',1)">↓</button></div><div class="actions"><button class="btn" onclick="editHabit('${h.id}')">ویرایش</button><button class="btn danger" onclick="deleteHabit('${h.id}')">حذف</button></div></div></div>`}).join('')||'<div class="card empty">یک عادت کوچک و قابل تکرار بساز.</div>'}</div>`}
+let draggedHabitId=null;
+function dragHabitStart(e,id){draggedHabitId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',id);e.currentTarget.classList.add('dragging')}
+function dragHabitOver(e){e.preventDefault();e.dataTransfer.dropEffect='move'}
+async function dropHabit(e,targetId){e.preventDefault();const sourceId=draggedHabitId||e.dataTransfer.getData('text/plain');document.querySelectorAll('.habit-card.dragging').forEach(x=>x.classList.remove('dragging'));draggedHabitId=null;if(!sourceId||sourceId===targetId)return;const arr=[...S.habits].sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));const si=arr.findIndex(x=>x.id===sourceId),ti=arr.findIndex(x=>x.id===targetId);if(si<0||ti<0)return;const [m]=arr.splice(si,1);arr.splice(ti,0,m);arr.forEach((h,i)=>h.order=i+1);for(const h of arr)await put('habits',h);await loadAll();render()}
+async function moveHabit(id,dir){const arr=[...S.habits].sort((a,b)=>(a.order??999999)-(b.order??999999)||(a.createdAt||0)-(b.createdAt||0));const i=arr.findIndex(x=>x.id===id),j=i+dir;if(i<0||j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];arr.forEach((h,k)=>h.order=k+1);for(const h of arr)await put('habits',h);await loadAll();render()}
+
+function habitForm(h={}){return `<h2>${h.id?'ویرایش عادت':'عادت جدید'}</h2><div class="form-grid"><div class="field full"><label>نام</label><input id="h_name" class="input" value="${esc(h.name||'')}"></div><div class="field"><label>هدف</label><input id="h_target" class="input" value="${esc(h.target||'')}"></div><div class="field"><label>تعداد هدف در هفته</label><input id="h_week" class="input" type="number" min="1" max="7" value="${h.week||3}"></div></div><div class="actions" style="margin-top:16px"><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="saveHabit('${h.id||''}')">ذخیره</button></div>`}
+function newHabit(){openModal(habitForm())}
+function editHabit(id){const h=S.habits.find(x=>x.id===id);if(h)openModal(habitForm(h))}
+async function saveHabit(id){const old=S.habits.find(x=>x.id===id),nextOrder=old?.order??(Math.max(0,...S.habits.map(x=>x.order??0))+1),h={id:id||uid(),name:document.getElementById('h_name').value.trim(),target:document.getElementById('h_target').value,week:+document.getElementById('h_week').value||3,order:nextOrder,createdAt:old?.createdAt||Date.now()};if(!h.name)return showToast('نام عادت را وارد کن.');await put('habits',h);await loadAll();closeModal();showToast('عادت ذخیره شد.');render()}
+async function toggleHabitToday(id){const d=jDateStr(),e=S.habitEntries.find(x=>x.habitId===id&&x.date===d);if(e)await del('habitEntries',e.id);else await put('habitEntries',{id:uid(),habitId:id,date:d,done:true});await loadAll();render()}
+async function deleteHabit(id){if(confirm('حذف این عادت؟')){await del('habits',id);for(const e of S.habitEntries.filter(x=>x.habitId===id))await del('habitEntries',e.id);await loadAll();render()}}
+
+/* ---------- Calendar ---------- */
+function calendar(){
+ const base=nowJ(),j=shiftJalaliMonth(base.jy,base.jm,calendarOffset),daysInMonth=jalaliMonthLength(j.jy,j.jm),start=jalaliMonthStartWeekday(j.jy,j.jm);
+ let cells='';for(let i=0;i<start;i++)cells+='<div aria-hidden="true"></div>';
+ for(let d=1;d<=daysInMonth;d++){const ds=`${j.jy}/${String(j.jm).padStart(2,'0')}/${String(d).padStart(2,'0')}`,ts=tasksForDate(ds);cells+=`<button type="button" class="cal-cell ${ds===jDateStr()?'today':''}" onclick="calendarDay('${ds}')" aria-label="${JALALI_MONTH[j.jm-1]} ${faNum(d)} ${faNum(j.jy)}"><div class="num">${faNum(d)}</div><div class="small">${ts.length?'<span class="dot"></span>'+faNum(ts.length)+' کار':''}</div></button>`;}
+ const label=`${JALALI_MONTH[j.jm-1]} ${faNum(j.jy)}`;
+ return `<div class="card"><div class="row"><button class="btn" aria-label="ماه قبل" onclick="calendarOffset--;render()">‹</button><div style="text-align:center"><h3 style="margin:0">${label}</h3><div class="small muted">${faNum(daysInMonth)} روز</div></div><button class="btn" aria-label="ماه بعد" onclick="calendarOffset++;render()">›</button></div><div class="actions" style="margin-top:10px"><button class="btn" onclick="calendarOffset=0;render()">امروز</button><button class="btn primary" onclick="newTask()">＋ کار</button></div><div class="calendar" style="margin-top:12px">${JALALI_WEEK.map(x=>`<div class="cal-head">${x}</div>`).join('')}${cells}</div></div>`;
+}
+function calendarDay(ds){openModal(`<h2>${JALALI_MONTH[Number(ds.split('/')[1])-1]} ${faNum(ds.split('/')[2])}</h2>${taskList(tasksForDate(ds))}<div style="margin-top:12px"><button class="btn primary" onclick="newTask('${ds}')">＋ کار در این روز</button></div>`)}
+
+/* ---------- Journal / Reviews ---------- */
+function journal(){return `<div class="toolbar"><input class="input search" placeholder="جست‌وجوی یادداشت‌ها..." value="${esc(searchQ)}" oninput="searchQ=this.value;render()"><button class="btn primary" onclick="newJournal()">＋ یادداشت</button></div><div class="grid g2">${S.journal.filter(x=>(x.title+' '+x.text).toLowerCase().includes(searchQ.toLowerCase())).sort((a,b)=>b.createdAt-a.createdAt).map(x=>`<div class="card"><div class="row"><h3>${esc(x.title||'بدون عنوان')}</h3><span class="small muted">${esc(x.date)}</span></div><p style="white-space:pre-wrap">${esc(x.text).slice(0,500)}</p><button class="btn" onclick="editJournal('${x.id}')">ویرایش</button></div>`).join('')||'<div class="card empty">هنوز یادداشتی ثبت نشده.</div>'}</div>`}
+function journalForm(x={}){return `<h2>${x.id?'ویرایش یادداشت':'یادداشت جدید'}</h2><div class="stack"><div class="field"><label>عنوان</label><input id="j_title" class="input" value="${esc(x.title||'')}"></div><div class="field"><label>متن</label><textarea id="j_text" class="textarea">${esc(x.text||'')}</textarea></div><div class="field"><label>حال و هوا</label><input id="j_mood" class="input" value="${esc(x.mood||'')}"></div></div><div class="actions" style="margin-top:16px"><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="saveJournal('${x.id||''}')">ذخیره</button></div>`}
+function newJournal(){openModal(journalForm())}function editJournal(id){const x=S.journal.find(x=>x.id===id);if(x)openModal(journalForm(x))}
+async function saveJournal(id){const old=S.journal.find(x=>x.id===id),x={id:id||uid(),title:document.getElementById('j_title').value,text:document.getElementById('j_text').value,mood:document.getElementById('j_mood').value,date:jDateStr(),createdAt:old?.createdAt||Date.now()};if(!x.text.trim())return showToast('متن یادداشت را وارد کن.');await put('journal',x);await loadAll();closeModal();showToast('یادداشت ذخیره شد.');render()}
+function review(month){
+ const j=nowJ(),key=month?`monthly-${j.jy}-${j.jm}`:`weekly-${j.jy}-${Math.ceil(j.jd/7)}`,r=S.reviews.find(x=>x.key===key)||{};
+ const qs=month?['مهم‌ترین دستاورد ماه چه بود؟','چه هدف‌هایی تکمیل یا منتقل شدند؟','مهم‌ترین درس ماه چه بود؟','مشکل اصلی چه بود؟','تصمیم‌های ماه بعد چیست؟']:['چه کارهایی انجام شد؟','چه کارهایی انجام نشد و چرا؟','مهم‌ترین دستاورد هفته چه بود؟','چه چیزی یاد گرفتم؟','چه چیزی باید متوقف شود؟','چه چیزی باید ادامه پیدا کند؟','چه چیزی باید شروع شود؟','هفته بعد مهم‌ترین اولویت‌ها چیست؟'];
+ return `<div class="card"><div class="row"><div><h3>${month?'مرور ماهانه':'مرور هفتگی'}</h3><div class="muted small">این فرم برای آگاهی و اصلاح است، نه قضاوت.</div></div><button class="btn primary" onclick="saveReview('${key}',${month})">ذخیره مرور</button></div><div class="stack" style="margin-top:16px">${qs.map((q,i)=>`<div class="field"><label>${q}</label><textarea class="textarea review-input" data-i="${i}">${esc(r.answers?.[i]||'')}</textarea></div>`).join('')}</div></div>`}
+async function saveReview(key,month){const answers=[...document.querySelectorAll('.review-input')].map(x=>x.value);await put('reviews',{id:key,key,month,answers,createdAt:Date.now()});await loadAll();showToast('مرور ذخیره شد.')}
+function dailyReflection(){openModal(`<h2>بازتاب امروز</h2><div class="stack">${['امروز چه چیزی خوب پیش رفت؟','چه چیزی خوب پیش نرفت؟','مهم‌ترین کاری که انجام دادم؟','چه چیزی یاد گرفتم؟','فردا مهم‌ترین کار چیست؟'].map((q,i)=>`<div class="field"><label>${q}</label><textarea id="dr${i}" class="textarea"></textarea></div>`).join('')}</div><button class="btn primary" style="margin-top:12px" onclick="saveDailyReflection()">ذخیره</button>`)}
+async function saveDailyReflection(){const answers=[0,1,2,3,4].map(i=>document.getElementById('dr'+i).value);await put('journal',{id:'reflection-'+jDateStr(),title:'بازتاب روز '+jDateStr(),text:answers.map((x,i)=>x?`${i+1}. ${x}`:'').filter(Boolean).join('\\n\\n'),date:jDateStr(),createdAt:Date.now()});await loadAll();closeModal();showToast('بازتاب امروز ثبت شد.');}
+
+/* ---------- Stats / Archive ---------- */
+function stats(){const ts=S.tasks.filter(t=>t.status!=='archived'),done=ts.filter(t=>t.status==='done').length,hs=S.habitEntries.filter(e=>e.done),gp=S.goals.length?Math.round(S.goals.reduce((a,g)=>a+(g.progress||0),0)/S.goals.length):0;return `<div class="grid g4"><div class="card"><div class="muted">تکمیل کارها</div><div class="stat">${faNum(pct(done,ts.length))}٪</div></div><div class="card"><div class="muted">پیشرفت میانگین اهداف</div><div class="stat">${faNum(gp)}٪</div></div><div class="card"><div class="muted">ثبت عادت‌ها</div><div class="stat">${faNum(hs.length)}</div></div><div class="card"><div class="muted">یادداشت‌ها</div><div class="stat">${faNum(S.journal.length)}</div></div></div><div class="card" style="margin-top:14px"><h3>روند ساده ۱۴ روز اخیر</h3><div class="heat" style="grid-template-columns:repeat(14,1fr)">${Array.from({length:14},(_,i)=>{const d=addJDays(nowJ(),-13+i),all=S.tasks.filter(t=>t.date===d),dd=all.filter(t=>t.status==='done').length;return `<i data-v="${dd?Math.min(4,Math.ceil(dd/2)):0}" title="${d}"></i>`}).join('')}</div><div class="small muted" style="margin-top:8px">این نمودار برای دیدن روند است، نه ساختن فشار مصنوعی.</div></div>`}
+function archive(){const at=S.tasks.filter(t=>t.status==='archived'),ag=S.goals.filter(g=>g.status==='archived');return `<div class="grid g2"><div class="card"><h3>کارهای آرشیوشده</h3>${taskList(at)}</div><div class="card"><h3>اهداف آرشیوشده</h3>${ag.map(g=>goalMini(g)).join('')||'<div class="empty">خالی است.</div>'}</div></div>`}
+
+/* ---------- Settings / Backup ---------- */
+function settingsPage(){const s=settings();return `<div class="grid g2"><div class="card"><h3>عمومی</h3><div class="stack">
+ <div class="field"><label>نام برنامه</label><input id="set_app" class="input" value="${esc(s.appName)}"></div><div class="field"><label>نام شما</label><input id="set_user" class="input" value="${esc(s.userName)}"></div>
+ <div class="field"><label>ظاهر</label><select id="set_theme" class="select"><option value="system" ${s.theme==='system'?'selected':''}>سیستم</option><option value="light" ${s.theme==='light'?'selected':''}>روشن</option><option value="dark" ${s.theme==='dark'?'selected':''}>تیره</option></select></div>
+ <div class="field"><label>رنگ اصلی</label><input id="set_accent" class="input" type="color" value="${esc(s.accent)}"></div>
+ <button class="btn primary" onclick="saveSettings()">ذخیره تنظیمات</button></div></div>
+ <div class="card"><h3>جملات تأکیدی</h3><div class="stack">${S.affirmations.map(a=>`<div class="row"><span>${esc(a.text)}</span><button class="btn danger" onclick="deleteAff('${a.id}')">حذف</button></div>`).join('')||'<div class="muted">هنوز جمله‌ای اضافه نشده.</div>'}<button class="btn" onclick="newAff()">＋ جمله جدید</button></div></div>
+ <div class="card"><h3>ویجت‌های داشبورد</h3><div class="stack">${[['today','وضعیت امروز'],['focus','تمرکز اصلی'],['goals','اهداف'],['habits','عادت‌ها'],['weekly','مرور هفتگی'],['affirmation','یادآوری امروز'],['upcoming','در راه'],['stats','آمار']].map(([k,n])=>`<label><input type="checkbox" ${s.widgets.includes(k)?'checked':''} onchange="toggleWidget('${k}',this.checked)"> ${n}</label>`).join('')}</div></div>
+ <div class="card"><h3>پشتیبان‌گیری</h3><p class="muted">تمام داده‌ها در یک فایل JSON ذخیره می‌شوند.</p><div class="actions"><button class="btn primary" onclick="exportData()">Export Data</button><label class="btn">Import Data<input type="file" accept=".json,application/json" hidden onchange="importData(this.files[0])"></label><button class="btn danger" onclick="wipeData()">حذف همه داده‌ها</button></div></div>
+ </div>`}
+async function saveSettings(){await saveSetting('appName',document.getElementById('set_app').value.trim()||'پلنر من');await saveSetting('userName',document.getElementById('set_user').value);await saveSetting('theme',document.getElementById('set_theme').value);await saveSetting('accent',document.getElementById('set_accent').value);applyTheme();showToast('تنظیمات ذخیره شد.');render()}
+async function toggleWidget(k,on){let w=[...(settings().widgets||[])];w=on?[...new Set([...w,k])]:w.filter(x=>x!==k);await saveSetting('widgets',w)}
+function newAff(){openModal(`<h2>جمله تأکیدی جدید</h2><textarea id="affText" class="textarea" placeholder="جمله خودت را بنویس..."></textarea><button class="btn primary" style="margin-top:12px" onclick="saveAff()">ذخیره</button>`)}
+async function saveAff(){const text=document.getElementById('affText').value.trim();if(!text)return;await put('affirmations',{id:uid(),text,active:true,createdAt:Date.now()});await loadAll();closeModal();showToast('جمله اضافه شد.');render()}
+async function deleteAff(id){await del('affirmations',id);await loadAll();render()}
+async function exportData(){const data={version:1,exportedAt:new Date().toISOString(),stores:{}};for(const k of STORES){data.stores[k]=k==='settings'?await getAll(k):await getAll(k)}const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${settings().appName.replace(/\\s+/g,'-')}-backup.json`;a.click();URL.revokeObjectURL(a.href);showToast('فایل پشتیبان ساخته شد.')}
+async function importData(file){if(!file)return;try{const data=JSON.parse(await file.text());if(!data?.stores||typeof data.stores!=='object')throw Error();if(!confirm('داده‌های فعلی با فایل واردشده جایگزین می‌شوند. ادامه می‌دهی؟'))return;for(const k of STORES){await clearStore(k);for(const obj of (data.stores[k]||[]))await put(k,obj)}await loadAll();applyTheme();showToast('بازیابی انجام شد.');render()}catch(e){showToast('فایل پشتیبان معتبر نیست.');}}
+async function wipeData(){if(!confirm('همه داده‌ها حذف شوند؟'))return;if(!confirm('تأیید دوم: این عملیات قابل بازگشت نیست مگر اینکه Backup داشته باشی.'))return;for(const k of STORES)await clearStore(k);Object.assign(S,{tasks:[],goals:[],projects:[],habits:[],habitEntries:[],journal:[],events:[],reviews:[],affirmations:[],tags:[],settings:{}});await seedDemo();showToast('داده‌ها پاک و برنامه دوباره آماده شد.');render()}
+
+/* ---------- Quick actions ---------- */
+function quickCapture(){openModal(`<h2>ثبت سریع</h2><div class="grid g2"><button class="btn" onclick="closeModal();newTask()">☑ کار</button><button class="btn" onclick="closeModal();newJournal()">✎ یادداشت</button><button class="btn" onclick="closeModal();newGoal()">◎ هدف</button><button class="btn" onclick="closeModal();openEvent()">◫ رویداد</button></div>`)}
+function setFocus(){openModal(`<h2>تمرکز اصلی امروز</h2><input id="focus" class="input" value="${esc(S.settings.focusToday||'')}"><button class="btn primary" style="margin-top:12px" onclick="saveFocus()">ذخیره</button>`)}
+async function saveFocus(){await saveSetting('focusToday',document.getElementById('focus').value.trim());closeModal();render()}
+function setMinimum(){openModal(`<h2>روز حداقلی</h2><textarea id="minDay" class="textarea">${esc(S.settings.minimumDay||'')}</textarea><button class="btn primary" style="margin-top:12px" onclick="saveMinimum()">ذخیره</button>`)}
+async function saveMinimum(){await saveSetting('minimumDay',document.getElementById('minDay').value);closeModal();render()}
+function setIfThen(){openModal(`<h2>If → Then</h2><div class="stack"><input id="ifx" class="input" placeholder="اگر..." value="${esc(S.settings.ifThen?.if||'')}"><input id="thenx" class="input" placeholder="آنگاه..." value="${esc(S.settings.ifThen?.then||'')}"><button class="btn primary" onclick="saveIfThen()">ذخیره</button></div>`)}
+async function saveIfThen(){await saveSetting('ifThen',{if:document.getElementById('ifx').value,then:document.getElementById('thenx').value});closeModal();render()}
+function setWeeklyPriorities(){openModal(`<h2>اولویت‌های هفته</h2><textarea id="wp" class="textarea" placeholder="هر اولویت در یک خط">${esc((S.settings.weeklyPriorities||[]).join('\\n'))}</textarea><button class="btn primary" style="margin-top:12px" onclick="savePriorities('weeklyPriorities','wp')">ذخیره</button>`)}
+function setMonthlyPriorities(){openModal(`<h2>اولویت‌های ماه</h2><textarea id="mp" class="textarea" placeholder="هر اولویت در یک خط">${esc((S.settings.monthlyPriorities||[]).join('\\n'))}</textarea><button class="btn primary" style="margin-top:12px" onclick="savePriorities('monthlyPriorities','mp')">ذخیره</button>`)}
+async function savePriorities(k,id){await saveSetting(k,document.getElementById(id).value.split('\\n').map(x=>x.trim()).filter(Boolean).slice(0,5));closeModal();render()}
+function openEvent(){openModal(`<h2>رویداد جدید</h2><div class="stack"><input id="evTitle" class="input" placeholder="عنوان"><input id="evDate" class="input" value="${jDateStr()}"><input id="evTime" class="input" type="time"><button class="btn primary" onclick="saveEvent()">ذخیره</button></div>`)}
+async function saveEvent(){const e={id:uid(),title:document.getElementById('evTitle').value,date:document.getElementById('evDate').value,time:document.getElementById('evTime').value};if(!e.title)return;await put('events',e);await loadAll();closeModal();showToast('رویداد ثبت شد.');render()}
+
+/* ---------- Demo / onboarding / shortcuts ---------- */
+async function seedDemo(){
+ if((await getAll('tasks')).length)return;
+ const g={id:uid(),title:'ساختن یک سیستم قابل تداوم',level:'ماهانه',progress:35,status:'active',reason:'کمک به تمرکز و استمرار',result:'هر روز بدانم قدم بعدی چیست.',createdAt:Date.now()};
+ const p={id:uid(),title:'مرتب‌سازی برنامه شخصی',goalId:g.id,createdAt:Date.now()};
+ await put('goals',g);await put('projects',p);
+ for(const [i,title] of ['مرور برنامه','۳۰ دقیقه کار عمیق','ثبت یک یادداشت'].entries())await put('tasks',{id:uid(),title,date:i===0?jDateStr():addJDays(nowJ(),i),priority:i===0?'P1':'P2',projectId:p.id,goalId:g.id,status:'todo',tags:[],migrations:[],createdAt:Date.now()});
+ await put('habits',{id:uid(),name:'شروع کوچک',target:'فقط شروع کن',week:5,createdAt:Date.now()});
+ await put('affirmations',{id:uid(),text:'رمز، در ادامه دادنه.',active:true,createdAt:Date.now()});
+}
+function onboarding(){openModal(`<h2>شروع سریع</h2><p class="muted">در چند قدم کوتاه، محیطت را آماده کن.</p><div class="stack"><div class="field"><label>نام شما</label><input id="obUser" class="input"></div><div class="field"><label>نام برنامه</label><input id="obApp" class="input" value="پلنر من"></div><div class="field"><label>مهم‌ترین هدف فعلی</label><input id="obGoal" class="input"></div><button class="btn primary" onclick="finishOnboarding()">ورود به داشبورد</button></div>`)}
+async function finishOnboarding(){await saveSetting('userName',document.getElementById('obUser').value);await saveSetting('appName',document.getElementById('obApp').value||'پلنر من');const title=document.getElementById('obGoal').value.trim();if(title)await put('goals',{id:uid(),title,level:'ماهانه',progress:0,status:'active',createdAt:Date.now()});await saveSetting('onboardingDone',true);await loadAll();closeModal();render()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.ctrlKey||e.metaKey)return;if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;const k=e.key.toLowerCase();if(k==='n')newTask();if(k==='g')goPage('goals');if(k==='t')goPage('today');if(k==='w')goPage('weekly');if(k==='m')goPage('monthly');if(k==='j')goPage('journal');if(k==='/'){e.preventDefault();page='tasks';render();setTimeout(()=>document.querySelector('.search')?.focus(),30)}});
+
+/* ---------- Boot ---------- */
+(async function(){
+ try{await openDB();await loadAll();if(!S.affirmations.length&&!S.tasks.length)await seedDemo();await loadAll();applyTheme();render();registerPWA();if(!settings().onboardingDone)setTimeout(onboarding,300)}
+ catch(e){document.getElementById('app').innerHTML='<div style="padding:40px;font-family:sans-serif">خطا در راه‌اندازی برنامه. صفحه را یک‌بار تازه‌سازی کنید.</div>';console.error(e)}
+})();
+</script>
+</body>
+</html>
