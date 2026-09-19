@@ -31,10 +31,6 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
-      - name: Restore HTML asset
-        run: |
-          base64 -d app/src/main/assets/index.html.gz.b64 | gzip -d > app/src/main/assets/index.html
-
       - name: Build installable debug APK
         run: gradle --no-daemon :app:assembleDebug
 
