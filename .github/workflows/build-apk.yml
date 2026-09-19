@@ -3,7 +3,7 @@ name: Build Hesabdari Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [ hesabdari-android ]
+    branches: [ hesabdari-android, hesabdari-fixed ]
 
 permissions:
   contents: read
