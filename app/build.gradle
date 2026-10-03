@@ -8,8 +8,8 @@ android {
         applicationId 'com.morteza.aria'
         minSdk 23
         targetSdk 35
-        versionCode 1
-        versionName '1.0.0'
+        versionCode 3
+        versionName '1.0.3'
     }
 
     compileOptions {
@@ -24,4 +24,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    packaging {
+        resources {
+            excludes += ['/META-INF/AL2.0', '/META-INF/LGPL2.1']
+        }
+    }
+}
+
+dependencies {
+    implementation 'net.java.dev.jna:jna:5.18.1@aar'
+    implementation 'com.alphacephei:vosk-android:0.3.75@aar'
 }
