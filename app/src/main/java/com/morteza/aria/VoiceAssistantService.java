@@ -13,15 +13,20 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 
+import org.json.JSONObject;
+import org.vosk.LibVosk;
+import org.vosk.LogLevel;
+import org.vosk.Model;
+import org.vosk.Recognizer;
+import org.vosk.android.RecognitionListener;
+import org.vosk.android.SpeechService;
+import org.vosk.android.StorageService;
+
 import java.text.SimpleDateFormat;
 import java.text.Normalizer;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -33,31 +38,26 @@ public class VoiceAssistantService extends Service implements RecognitionListene
     private static final String KEY_ENABLED = "enabled";
     private static final String CHANNEL_ID = "aria_voice";
     private static final int NOTIFICATION_ID = 7101;
+    private static final float SAMPLE_RATE = 16000.0f;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
-    private SpeechRecognizer recognizer;
-    private Intent recognizerIntent;
+    private SharedPreferences prefs;
+    private Model model;
+    private Recognizer recognizer;
+    private SpeechService speechService;
     private TextToSpeech tts;
+
     private boolean ttsReady = false;
+    private boolean modelReady = false;
     private boolean listening = false;
     private boolean commandMode = false;
     private boolean transitioning = false;
-    private long lastWakeAt = 0L;
-    private String wakePhrase = "آریا";
-    private SharedPreferences prefs;
-    private PowerManager.WakeLock wakeLock;
+    private boolean wakeTriggered = false;
 
-    private final Runnable watchdog = new Runnable() {
-        @Override
-        public void run() {
-            if (!transitioning && prefs != null && prefs.getBoolean(KEY_ENABLED, false)
-                    && recognizer != null && !listening) {
-                startWakeListening();
-            }
-            handler.postDelayed(this, 5000);
-        }
-    };
+    private String wakePhrase = "آریا";
+    private long lastWakeAt = 0L;
+    private PowerManager.WakeLock wakeLock;
 
     @Override
     public void onCreate() {
@@ -67,17 +67,19 @@ public class VoiceAssistantService extends Service implements RecognitionListene
         wakePhrase = safeWakePhrase();
 
         createNotificationChannel();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                     NOTIFICATION_ID,
-                    buildNotification("در حال آماده‌سازی میکروفون…"),
+                    buildNotification("در حال آماده‌سازی…"),
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
             );
         } else {
-            startForeground(NOTIFICATION_ID, buildNotification("در حال آماده‌سازی میکروفون…"));
+            startForeground(NOTIFICATION_ID, buildNotification("در حال آماده‌سازی…"));
         }
 
         acquireWakeLock();
+        LibVosk.setLogLevel(LogLevel.WARN);
 
         tts = new TextToSpeech(getApplicationContext(), status -> {
             if (status == TextToSpeech.SUCCESS) {
@@ -91,156 +93,162 @@ public class VoiceAssistantService extends Service implements RecognitionListene
             }
         });
 
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            updateNotification("موتور تشخیص گفتار پیدا نشد.");
-            speak("موتور تشخیص گفتار روی این گوشی در دسترس نیست.", null);
-            return;
-        }
+        updateNotification("در حال بارگذاری موتور فارسی…");
 
-        recognizer = SpeechRecognizer.createSpeechRecognizer(this);
-        recognizer.setRecognitionListener(this);
-
-        recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        recognizerIntent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        StorageService.unpack(
+                this,
+                "model-fa",
+                "model-fa",
+                loadedModel -> {
+                    model = loadedModel;
+                    modelReady = true;
+                    updateNotification("مدل فارسی آماده است");
+                    handler.postDelayed(this::startWakeMode, 250);
+                },
+                exception -> {
+                    updateNotification("خطای بارگذاری مدل فارسی");
+                    speak("مدل فارسی آماده نشد. برنامه را دوباره باز کن.", null);
+                }
         );
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fa-IR");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "fa-IR");
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-
-        // Do NOT force offline recognition: Persian offline packs are not guaranteed.
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false);
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            recognizerIntent.putExtra(
-                    RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS,
-                    1200L
-            );
-            recognizerIntent.putExtra(
-                    RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,
-                    700L
-            );
-            recognizerIntent.putExtra(
-                    RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
-                    700L
-            );
-        }
-
-        updateNotification("منتظر «" + wakePhrase + "»");
-        handler.postDelayed(this::startWakeListening, 500);
-        handler.postDelayed(watchdog, 5000);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         wakePhrase = safeWakePhrase();
-        if (!listening && recognizer != null && !transitioning) {
-            handler.postDelayed(this::startWakeListening, 200);
+
+        if (modelReady && !listening && !transitioning
+                && prefs.getBoolean(KEY_ENABLED, true)) {
+            handler.postDelayed(this::startWakeMode, 150);
         }
         return START_STICKY;
     }
 
     private String safeWakePhrase() {
-        String value = prefs == null ? "آریا" : prefs.getString(KEY_WAKE_PHRASE, "آریا");
+        String value = prefs.getString(KEY_WAKE_PHRASE, "آریا");
         value = value == null ? "" : value.trim();
         return value.isEmpty() ? "آریا" : value;
     }
 
-    private void startWakeListening() {
-        if (recognizer == null || transitioning || listening
+    private void startWakeMode() {
+        if (!modelReady || model == null || listening || transitioning
                 || !prefs.getBoolean(KEY_ENABLED, true)) {
             return;
         }
 
         commandMode = false;
-        listening = true;
-        updateNotification("گوش می‌دهم برای «" + wakePhrase + "»");
+        wakeTriggered = false;
+        wakePhrase = safeWakePhrase();
 
         try {
-            recognizer.cancel();
-            recognizer.startListening(recognizerIntent);
+            if (speechService != null) {
+                speechService.cancel();
+                speechService.shutdown();
+                speechService = null;
+            }
+
+            if (recognizer != null) {
+                recognizer.close();
+                recognizer = null;
+            }
+
+            recognizer = new Recognizer(
+                    model,
+                    SAMPLE_RATE,
+                    "[\"آریا\", \"اریا\", \"هریا\", \"[unk]\"]"
+            );
+
+            speechService = new SpeechService(recognizer, SAMPLE_RATE);
+            listening = speechService.startListening(this);
+
+            updateNotification("همیشه‌فعال — منتظر «" + wakePhrase + "»");
         } catch (Exception e) {
             listening = false;
-            updateNotification("خطای شروع میکروفون؛ تلاش مجدد…");
-            scheduleWakeRestart(1200);
+            updateNotification("خطای میکروفون؛ تلاش مجدد…");
+            scheduleRestart(1500);
         }
-    }
-
-    private void scheduleWakeRestart(long delayMs) {
-        if (transitioning || !prefs.getBoolean(KEY_ENABLED, true)) {
-            return;
-        }
-        handler.postDelayed(() -> {
-            if (!transitioning && !listening && recognizer != null) {
-                startWakeListening();
-            }
-        }, delayMs);
     }
 
     private void activateFromWake(String spoken) {
         long now = System.currentTimeMillis();
-        if (transitioning || now - lastWakeAt < 1200) {
+
+        if (wakeTriggered || transitioning || now - lastWakeAt < 1500) {
             return;
         }
+
+        if (!isWakePhrase(spoken)) {
+            return;
+        }
+
         lastWakeAt = now;
+        wakeTriggered = true;
         transitioning = true;
         listening = false;
 
-        try {
-            recognizer.cancel();
-        } catch (Exception ignored) {
-        }
-
-        String normalized = normalize(spoken);
-        String phrase = normalize(wakePhrase);
-        String remaining = normalized.startsWith(phrase)
-                ? normalized.substring(phrase.length()).trim()
-                : "";
-
-        if (!remaining.isEmpty()) {
-            commandMode = true;
-            transitioning = false;
-            handleCommand(spoken.substring(
-                    Math.min(spoken.length(), wakePhrase.length())
-            ).trim());
-            return;
+        if (speechService != null) {
+            speechService.cancel();
         }
 
         updateNotification("آریا فعال شد");
+
         speak("بله؟", () -> {
+            if (!prefs.getBoolean(KEY_ENABLED, true)) {
+                return;
+            }
+
             commandMode = true;
             transitioning = false;
-            handler.postDelayed(this::startCommandListening, 180);
+
+            try {
+                recognizer.setGrammar("[]");
+                recognizer.reset();
+            } catch (Exception ignored) {
+            }
+
+            startListeningAgain("منتظر فرمان شما هستم");
         });
     }
 
-    private void startCommandListening() {
-        if (recognizer == null || listening || !prefs.getBoolean(KEY_ENABLED, true)) {
+    private void startListeningAgain(String notification) {
+        if (speechService == null || listening
+                || !prefs.getBoolean(KEY_ENABLED, true)) {
             return;
         }
 
-        wakePhrase = safeWakePhrase();
-        commandMode = true;
-        listening = true;
-        updateNotification("منتظر فرمان شما هستم");
-
         try {
-            recognizer.cancel();
-            recognizer.startListening(recognizerIntent);
+            listening = speechService.startListening(this);
+            updateNotification(notification);
         } catch (Exception e) {
             listening = false;
             commandMode = false;
-            speak("دوباره بگو.", this::startWakeListening);
+            scheduleRestart(1000);
         }
+    }
+
+    private void scheduleRestart(long delayMs) {
+        handler.postDelayed(() -> {
+            if (modelReady && !transitioning && !listening
+                    && prefs.getBoolean(KEY_ENABLED, true)) {
+                startWakeMode();
+            }
+        }, delayMs);
+    }
+
+    private String remainingAfterWake(String spoken) {
+        String normalized = normalize(spoken);
+        String phrase = normalize(wakePhrase);
+
+        if (normalized.startsWith(phrase)) {
+            return normalized.substring(phrase.length()).trim();
+        }
+        return "";
     }
 
     private void handleCommand(String spoken) {
         String text = normalize(spoken);
+
         if (text.isEmpty()) {
             commandMode = false;
-            speak("دوباره بگو.", this::startWakeListening);
+            speak("دوباره بگو.", this::returnToWakeMode);
             return;
         }
 
@@ -250,83 +258,76 @@ public class VoiceAssistantService extends Service implements RecognitionListene
             return;
         }
 
-        if (containsAny(text, "ساعت چنده", "ساعت چند", "الان ساعت")) {
+        if (containsAny(text, "ساعت چنده", "ساعت چند", "الان ساعت", "زمان چنده")) {
             String time = new SimpleDateFormat("HH:mm", new Locale("fa", "IR"))
                     .format(new Date());
             commandMode = false;
-            speak("الان ساعت " + time + " است.", this::startWakeListening);
+            speak("الان ساعت " + time + " است.", this::returnToWakeMode);
             return;
         }
 
         if (containsAny(text, "سلام", "درود")) {
             commandMode = false;
-            speak("سلام. من آریا هستم و آماده‌ام.", this::startWakeListening);
+            speak("سلام. من آریا هستم و آماده‌ام.", this::returnToWakeMode);
             return;
         }
 
         if (containsAny(text, "اسمت چیه", "اسم تو چیه", "کی هستی")) {
             commandMode = false;
             speak("اسم من آریاست. با گفتن «" + wakePhrase + "» صدایم کن.",
-                    this::startWakeListening);
+                    this::returnToWakeMode);
             return;
         }
 
         if (containsAny(text, "ممنون", "مرسی", "تشکر")) {
             commandMode = false;
-            speak("خواهش می‌کنم.", this::startWakeListening);
+            speak("خواهش می‌کنم.", this::returnToWakeMode);
             return;
         }
 
         commandMode = false;
-        speak("گفتی: " + spoken +
-                ". در این نسخه، بخش گفت‌وگوی هوشمند هنوز به مغز آنلاین وصل نشده است.",
-                this::startWakeListening);
+        speak(
+                "گفتی: " + spoken +
+                        ". در این نسخه هنوز بخش هوش گفت‌وگویی به مدل آنلاین وصل نشده است.",
+                this::returnToWakeMode
+        );
     }
 
-    private boolean containsAny(String text, String... values) {
-        for (String value : values) {
-            if (text.contains(normalize(value))) {
-                return true;
-            }
+    private void returnToWakeMode() {
+        if (!prefs.getBoolean(KEY_ENABLED, true)) {
+            return;
         }
-        return false;
-    }
 
-    private String normalize(String input) {
-        if (input == null) {
-            return "";
+        transitioning = false;
+        commandMode = false;
+        listening = false;
+
+        if (speechService != null) {
+            speechService.cancel();
         }
-        return Normalizer.normalize(input, Normalizer.Form.NFKC)
-                .toLowerCase(Locale.ROOT)
-                .replace('ي', 'ی')
-                .replace('ى', 'ی')
-                .replace('ك', 'ک')
-                .replace("ۀ", "ه")
-                .replaceAll("[ًٌٍَُِّْـ]", "")
-                .replaceAll("[^\\p{L}\\p{N}\\s]", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
+
+        handler.postDelayed(this::startWakeMode, 200);
     }
 
-    private boolean isWakePhrase(String text) {
-        String normalized = normalize(text);
+    private boolean isWakePhrase(String spoken) {
+        String text = normalize(spoken);
         String phrase = normalize(wakePhrase);
 
-        if (phrase.isEmpty()) {
-            return false;
-        }
-
-        if (normalized.equals(phrase)
-                || normalized.startsWith(phrase + " ")
-                || normalized.contains(" " + phrase + " ")) {
+        if (text.equals(phrase)
+                || text.contains(" " + phrase + " ")
+                || text.startsWith(phrase + " ")
+                || text.endsWith(" " + phrase)) {
             return true;
         }
 
-        // Common Persian speech-recognition variant: «اریا» instead of «آریا».
-        String[] tokens = normalized.split(" ");
+        String[] tokens = text.split(" ");
+        String[] accepted = {phrase, "اریا", "هریا"};
+
         for (String token : tokens) {
-            if (levenshtein(token, phrase) <= 1) {
-                return true;
+            for (String target : accepted) {
+                if (!target.isEmpty() && levenshtein(token, target) <= 1) {
+                    return true;
+                }
             }
         }
 
@@ -350,6 +351,7 @@ public class VoiceAssistantService extends Service implements RecognitionListene
                         prev[j - 1] + cost
                 );
             }
+
             int[] tmp = prev;
             prev = curr;
             curr = tmp;
@@ -358,21 +360,30 @@ public class VoiceAssistantService extends Service implements RecognitionListene
         return prev[b.length()];
     }
 
-    private void processRecognition(ArrayList<String> matches, boolean partial) {
-        if (matches == null || matches.isEmpty() || transitioning) {
-            return;
+    private String normalize(String input) {
+        if (input == null) {
+            return "";
         }
 
-        if (!commandMode) {
-            for (String candidate : matches) {
-                if (isWakePhrase(candidate)) {
-                    activateFromWake(candidate);
-                    return;
-                }
+        return Normalizer.normalize(input, Normalizer.Form.NFKC)
+                .toLowerCase(Locale.ROOT)
+                .replace('ي', 'ی')
+                .replace('ى', 'ی')
+                .replace('ك', 'ک')
+                .replace("ۀ", "ه")
+                .replaceAll("[ًٌٍَُِّْـ]", "")
+                .replaceAll("[^\\p{L}\\p{N}\\s]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private boolean containsAny(String text, String... values) {
+        for (String value : values) {
+            if (text.contains(normalize(value))) {
+                return true;
             }
-        } else if (!partial) {
-            handleCommand(matches.get(0));
         }
+        return false;
     }
 
     private void speak(String text, Runnable after) {
@@ -383,32 +394,69 @@ public class VoiceAssistantService extends Service implements RecognitionListene
             return;
         }
 
-        String utteranceId = UUID.randomUUID().toString();
+        final String id = UUID.randomUUID().toString();
+
         tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-            @Override
-            public void onStart(String id) {
-            }
+            @Override public void onStart(String utteranceId) { }
 
             @Override
-            public void onDone(String id) {
-                if (utteranceId.equals(id) && after != null) {
+            public void onDone(String utteranceId) {
+                if (id.equals(utteranceId) && after != null) {
                     handler.post(after);
                 }
             }
 
             @Override
-            public void onError(String id) {
-                if (utteranceId.equals(id) && after != null) {
+            public void onError(String utteranceId) {
+                if (id.equals(utteranceId) && after != null) {
                     handler.post(after);
                 }
             }
         });
 
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId);
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id);
+    }
+
+    private void handlePartial(String json) {
+        if (commandMode || transitioning || json == null) {
+            return;
+        }
+
+        try {
+            JSONObject object = new JSONObject(json);
+            String partial = object.optString("partial", "");
+
+            if (isWakePhrase(partial)) {
+                activateFromWake(partial);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void handleFinal(String json) {
+        if (json == null || transitioning) {
+            return;
+        }
+
+        try {
+            JSONObject object = new JSONObject(json);
+            String text = object.optString("text", "");
+
+            if (!commandMode) {
+                if (isWakePhrase(text)) {
+                    activateFromWake(text);
+                }
+            } else if (!text.trim().isEmpty()) {
+                commandMode = false;
+                handleCommand(text);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private Notification buildNotification(String content) {
         Intent openIntent = new Intent(this, MainActivity.class);
+
         PendingIntent pi = PendingIntent.getActivity(
                 this,
                 0,
@@ -427,8 +475,9 @@ public class VoiceAssistantService extends Service implements RecognitionListene
     }
 
     private void updateNotification(String content) {
-        NotificationManager manager = (NotificationManager)
-                getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager manager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
         if (manager != null) {
             manager.notify(NOTIFICATION_ID, buildNotification(content));
         }
@@ -441,8 +490,11 @@ public class VoiceAssistantService extends Service implements RecognitionListene
                     "دستیار صوتی",
                     NotificationManager.IMPORTANCE_LOW
             );
-            channel.setDescription("سرویس شنیدن عبارت بیدارباش آریا");
-            NotificationManager manager = getSystemService(NotificationManager.class);
+            channel.setDescription("سرویس همیشه‌فعال آریا");
+
+            NotificationManager manager =
+                    getSystemService(NotificationManager.class);
+
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
@@ -452,6 +504,7 @@ public class VoiceAssistantService extends Service implements RecognitionListene
     private void acquireWakeLock() {
         try {
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+
             if (pm != null) {
                 wakeLock = pm.newWakeLock(
                         PowerManager.PARTIAL_WAKE_LOCK,
@@ -464,67 +517,79 @@ public class VoiceAssistantService extends Service implements RecognitionListene
         }
     }
 
-    @Override public void onReadyForSpeech(android.os.Bundle params) {
-        updateNotification("میکروفون آماده است؛ منتظر «" + wakePhrase + "»");
+    @Override
+    public void onPartialResult(String hypothesis) {
+        handlePartial(hypothesis);
     }
 
-    @Override public void onBeginningOfSpeech() {
-        updateNotification("صدایتان را می‌شنوم…");
-    }
-
-    @Override public void onRmsChanged(float rmsdB) {
-    }
-
-    @Override public void onBufferReceived(byte[] buffer) {
-    }
-
-    @Override public void onEndOfSpeech() {
-    }
-
-    @Override public void onResults(android.os.Bundle results) {
+    @Override
+    public void onResult(String hypothesis) {
         listening = false;
-        ArrayList<String> matches =
-                results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        processRecognition(matches, false);
+        handleFinal(hypothesis);
 
-        if (!transitioning && !commandMode) {
-            scheduleWakeRestart(180);
+        if (!transitioning && !commandMode && !wakeTriggered) {
+            scheduleRestart(250);
         }
     }
 
-    @Override public void onPartialResults(android.os.Bundle partialResults) {
-        ArrayList<String> matches =
-                partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        processRecognition(matches, true);
+    @Override
+    public void onFinalResult(String hypothesis) {
+        listening = false;
+
+        if (!transitioning && commandMode) {
+            handleFinal(hypothesis);
+        }
     }
 
-    @Override public void onError(int error) {
+    @Override
+    public void onError(Exception exception) {
         listening = false;
 
         if (transitioning) {
             return;
         }
 
-        updateNotification("گوش دادن دوباره راه‌اندازی می‌شود…");
+        updateNotification("گوش دادن ادامه پیدا می‌کند…");
 
         if (commandMode) {
             commandMode = false;
-            speak("نتونستم بشنوم. دوباره بگو.", this::startWakeListening);
+            speak("نتونستم بشنوم. دوباره بگو.", this::returnToWakeMode);
         } else {
-            scheduleWakeRestart(500);
+            scheduleRestart(700);
         }
     }
 
-    @Override public void onEvent(int eventType, android.os.Bundle params) {
+    @Override
+    public void onTimeout() {
+        listening = false;
+
+        if (!transitioning && !commandMode) {
+            scheduleRestart(250);
+        }
     }
 
-    @Override public void onDestroy() {
+    @Override
+    public void onDestroy() {
         handler.removeCallbacksAndMessages(null);
+
+        if (speechService != null) {
+            try {
+                speechService.stop();
+                speechService.shutdown();
+            } catch (Exception ignored) {
+            }
+        }
 
         if (recognizer != null) {
             try {
-                recognizer.cancel();
-                recognizer.destroy();
+                recognizer.close();
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (model != null) {
+            try {
+                model.close();
             } catch (Exception ignored) {
             }
         }
@@ -544,7 +609,8 @@ public class VoiceAssistantService extends Service implements RecognitionListene
         super.onDestroy();
     }
 
-    @Override public IBinder onBind(Intent intent) {
+    @Override
+    public IBinder onBind(Intent intent) {
         return null;
     }
 }
