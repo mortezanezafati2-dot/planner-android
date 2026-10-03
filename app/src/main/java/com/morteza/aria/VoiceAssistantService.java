@@ -389,7 +389,7 @@ public class VoiceAssistantService extends Service implements RecognitionListene
                 .replace('ك', 'ک')
                 .replace("ۀ", "ه")
                 .replaceAll("[ًٌٍَُِّْـ]", "")
-                .replaceAll("[^\p{L}\p{N}\s]", " ")
+                .replaceAll("[^\\p{L}\\p{N}\\s]", " ")
                 .replaceAll("\s+", " ")
                 .trim();
     }
