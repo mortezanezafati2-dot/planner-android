@@ -59,6 +59,7 @@ public class VoiceAssistantService extends Service {
     private volatile boolean listening = false;
     private volatile boolean commandMode = false;
     private volatile boolean transitioning = false;
+    private volatile boolean destroyed = false;
 
     private String wakePhrase = "آریا";
     private long lastWakeAt = 0L;
@@ -97,7 +98,7 @@ public class VoiceAssistantService extends Service {
                 "model-fa",
                 "model-fa",
                 loadedModel -> {
-                    if (isStopping()) {
+                    if (destroyed) {
                         try {
                             loadedModel.close();
                         } catch (Exception ignored) {
@@ -175,7 +176,7 @@ public class VoiceAssistantService extends Service {
                                 pendingAfterTts = null;
                             }
                         }
-                        if (next != null && !isStopping()) {
+                        if (next != null && !destroyed) {
                             next.run();
                         }
                     });
@@ -414,15 +415,11 @@ public class VoiceAssistantService extends Service {
                 if (newSession != sessionCounter.get()) {
                     return;
                 }
-                if (after != null && !isServiceReallyStopping()) {
+                if (after != null && !destroyed && prefs.getBoolean(KEY_ENABLED, true)) {
                     after.run();
                 }
             });
         });
-    }
-
-    private boolean isServiceReallyStopping() {
-        return !prefs.getBoolean(KEY_ENABLED, true);
     }
 
     private void stopEngineInternal() {
@@ -749,6 +746,7 @@ public class VoiceAssistantService extends Service {
 
     @Override
     public void onDestroy() {
+        destroyed = true;
         mainHandler.removeCallbacksAndMessages(null);
         sessionCounter.incrementAndGet();
 
