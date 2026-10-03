@@ -18,7 +18,6 @@ import android.speech.tts.UtteranceProgressListener;
 
 import org.json.JSONObject;
 import org.vosk.LibVosk;
-import org.vosk.LogLevel;
 import org.vosk.Model;
 import org.vosk.Recognizer;
 import org.vosk.android.RecognitionListener;
@@ -79,7 +78,6 @@ public class VoiceAssistantService extends Service implements RecognitionListene
         }
 
         acquireWakeLock();
-        LibVosk.setLogLevel(LogLevel.WARN);
 
         tts = new TextToSpeech(getApplicationContext(), status -> {
             if (status == TextToSpeech.SUCCESS) {
