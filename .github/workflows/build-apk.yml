@@ -57,6 +57,25 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -v 4 "$APK"
           echo "APK structural verification passed."
 
+      - name: Smoke test install and launch on Android 35 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          emulator-options: -no-window -noaudio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            APK=app/build/outputs/apk/debug/app-debug.apk
+            adb install "$APK"
+            adb shell am start -n com.morteza.aria.v4/com.morteza.aria.MainActivity
+            sleep 2
+            adb shell pidof com.morteza.aria.v4
+            adb shell dumpsys package com.morteza.aria.v4 | grep -E "versionCode=|versionName="
+            echo "Emulator install/launch smoke test passed."
+
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/aria-assistant-v5.apk
 
