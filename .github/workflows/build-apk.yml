@@ -31,15 +31,26 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
+      - name: Download Persian Vosk model
+        run: |
+          set -euo pipefail
+          rm -rf app/src/main/assets/model-fa /tmp/vosk-fa.zip /tmp/vosk-fa
+          mkdir -p app/src/main/assets
+          curl -L --fail --retry 4 --retry-delay 2             -o /tmp/vosk-fa.zip             https://alphacephei.com/vosk/models/vosk-model-small-fa-0.42.zip
+          mkdir -p /tmp/vosk-fa
+          unzip -q /tmp/vosk-fa.zip -d /tmp/vosk-fa
+          mv /tmp/vosk-fa/vosk-model-small-fa-0.42 app/src/main/assets/model-fa
+          uuidgen > app/src/main/assets/model-fa/uuid
+
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/aria-assistant-debug.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/aria-assistant-v3.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: aria-assistant-apk
-          path: app/build/outputs/apk/debug/aria-assistant-debug.apk
+          path: app/build/outputs/apk/debug/aria-assistant-v3.apk
           if-no-files-found: error
