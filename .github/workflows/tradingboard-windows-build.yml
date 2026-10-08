@@ -1,10 +1,11 @@
-name: Build TradingBoard Windows Installer
+name: Build TradingBoard Windows Desktop
 on:
   push:
     paths:
       - 'tradingboard-windows/**'
       - '.github/workflows/tradingboard-windows-build.yml'
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-latest
@@ -13,15 +14,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate Python source
+      - name: Validate source
         shell: powershell
         run: python -m py_compile tradingboard-windows/app.py
-      - name: Build EXE
+      - name: Install Python packages
+        shell: powershell
+        run: python -m pip install --upgrade pip && pip install -r tradingboard-windows/requirements.txt
+      - name: Restore original HTML source
         shell: powershell
         run: |
           cd tradingboard-windows
-          python -m pip install --upgrade pip pyinstaller
-          pyinstaller --noconfirm --clean --onefile --windowed --name BacktestLab app.py
+          python -c "import base64,zlib,pathlib; pathlib.Path('TradingBoard_v12.html').write_bytes(zlib.decompress(base64.b64decode(pathlib.Path('TradingBoard_v12.html.zlib.b64').read_text())))"
+      - name: Build desktop app
+        shell: powershell
+        run: |
+          cd tradingboard-windows
+          pyinstaller --noconfirm --clean --onedir --windowed --name BacktestLab --add-data "TradingBoard_v12.html;tradingboard-windows" app.py
       - name: Install Inno Setup
         shell: powershell
         run: choco install innosetup --no-progress -y
@@ -32,5 +40,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: BacktestLab-Windows-Installer
-          path: tradingboard-windows/dist/BacktestLab-Setup.exe
+          path: tradingboard-windows/dist-installer/BacktestLab-Setup.exe
           if-no-files-found: error

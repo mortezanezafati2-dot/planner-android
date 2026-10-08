@@ -1,22 +1,33 @@
 #define MyAppName "Backtest Lab"
 #define MyAppVersion "2.0.0"
+#define MyAppPublisher "Backtest Lab"
 #define MyAppExeName "BacktestLab.exe"
+
 [Setup]
-AppId={{6A5D5E40-1C7A-4B5B-9C8A-4F7A2B5C3D11}
+AppId={{F63A20BF-4C67-4CE0-B0E0-BACKTESTLAB02}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-DefaultDirName={autopf}\\Backtest Lab
-DefaultGroupName={#MyAppName}
-OutputDir=dist
+AppPublisher={#MyAppPublisher}
+DefaultDirName={autopf}\Backtest Lab
+DefaultGroupName=Backtest Lab
+OutputDir=dist-installer
 OutputBaseFilename=BacktestLab-Setup
-Compression=lzma
+Compression=lzma2
 SolidCompression=yes
-ArchitecturesInstallIn64BitMode=x64
 WizardStyle=modern
+ArchitecturesInstallIn64BitMode=x64compatible
+PrivilegesRequired=admin
+UninstallDisplayIcon={app}\{#MyAppExeName}
+
 [Files]
-Source: "dist\\BacktestLab.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\BacktestLab\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+
 [Icons]
-Name: "{group}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"
-Name: "{autodesktop}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"
+Name: "{group}\Backtest Lab"; Filename: "{app}\{#MyAppExeName}"
+Name: "{autodesktop}\Backtest Lab"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+
+[Tasks]
+Name: "desktopicon"; Description: "ایجاد میانبر روی دسکتاپ"; GroupDescription: "میانبرهای اضافی:"
+
 [Run]
-Filename: "{app}\\{#MyAppExeName}"; Description: "اجرای {#MyAppName}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "اجرای Backtest Lab"; Flags: nowait postinstall skipifsilent
