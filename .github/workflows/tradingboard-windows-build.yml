@@ -1,0 +1,44 @@
+name: Build TradingBoard Windows Installer
+on:
+  push:
+    paths:
+      - 'tradingboard-windows/**'
+      - '.github/workflows/tradingboard-windows-build.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore Python source
+        shell: powershell
+        run: |
+          $p = 'tradingboard-windows/app.py.gz.b64'
+          $out = 'tradingboard-windows/app.py.gz'
+          $b64 = (Get-Content -Raw $p).Trim()
+          [IO.File]::WriteAllBytes($out, [Convert]::FromBase64String($b64))
+          python -c "import gzip; b=open(r'tradingboard-windows/app.py.gz','rb').read(); open(r'tradingboard-windows/app.py','wb').write(gzip.decompress(b))"
+      - name: Validate source
+        shell: powershell
+        run: python -m py_compile tradingboard-windows/app.py
+      - name: Build EXE
+        shell: powershell
+        run: |
+          cd tradingboard-windows
+          python -m pip install --upgrade pip pyinstaller
+          pyinstaller --noconfirm --clean --onefile --windowed --name BacktestLab app.py
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup --no-progress -y
+      - name: Build installer
+        shell: powershell
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "tradingboard-windows\installer.iss"'
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: BacktestLab-Windows-Installer
+          path: tradingboard-windows/dist/BacktestLab-Setup.exe
+          if-no-files-found: error
