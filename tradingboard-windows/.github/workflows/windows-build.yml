@@ -13,10 +13,10 @@ jobs:
         shell: powershell
         run: |
           $p = Join-Path $env:GITHUB_WORKSPACE 'tradingboard-windows/app.py.gz.b64'
-          $out = Join-Path $env:GITHUB_WORKSPACE 'tradingboard-windows/app.py'
+          $out = Join-Path $env:GITHUB_WORKSPACE 'tradingboard-windows/app.py.gz'
           $b64 = (Get-Content -Raw $p).Trim()
-          [IO.File]::WriteAllBytes($out, [Convert]::FromBase64String($b64) | % { $_ })
-          python -c "import gzip; p=r'tradingboard-windows/app.py'; b=open(p,'rb').read(); open(p,'wb').write(gzip.decompress(b))"
+          [IO.File]::WriteAllBytes($out, [Convert]::FromBase64String($b64))
+          python -c "import gzip; b=open(r'tradingboard-windows/app.py.gz','rb').read(); open(r'tradingboard-windows/app.py','wb').write(gzip.decompress(b))"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -31,7 +31,7 @@ jobs:
         run: choco install innosetup --no-progress -y
       - name: Build installer
         shell: powershell
-        run: '& "C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe" "tradingboard-windows\\installer.iss"'
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "tradingboard-windows\installer.iss"'
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
