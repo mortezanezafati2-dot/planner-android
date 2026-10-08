@@ -13,15 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Restore Python source
-        shell: powershell
-        run: |
-          $p = 'tradingboard-windows/app.py.gz.b64'
-          $out = 'tradingboard-windows/app.py.gz'
-          $b64 = (Get-Content -Raw $p).Trim()
-          [IO.File]::WriteAllBytes($out, [Convert]::FromBase64String($b64))
-          python -c "import gzip; b=open(r'tradingboard-windows/app.py.gz','rb').read(); open(r'tradingboard-windows/app.py','wb').write(gzip.decompress(b))"
-      - name: Validate source
+      - name: Validate Python source
         shell: powershell
         run: python -m py_compile tradingboard-windows/app.py
       - name: Build EXE
