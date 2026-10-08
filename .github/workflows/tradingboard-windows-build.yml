@@ -24,7 +24,8 @@ jobs:
           pip install -r tradingboard-windows/requirements.txt
       - name: Verify original HTML source
         shell: powershell
-        run: python -c "from pathlib import Path; p=Path('tradingboard-windows/TradingBoard_v12.html'); print(f'HTML source OK: {p.stat().st_size} bytes') if p.exists() else (_ for _ in ()).throw(FileNotFoundError(p))"
+        run: |
+          python -c "from pathlib import Path; p=Path('tradingboard-windows/TradingBoard_v12.html'); assert p.exists(); print('HTML source bytes:', p.stat().st_size)"
       - name: Build desktop app
         shell: powershell
         run: |
