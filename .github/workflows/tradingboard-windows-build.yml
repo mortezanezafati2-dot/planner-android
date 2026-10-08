@@ -22,11 +22,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r tradingboard-windows/requirements.txt
-      - name: Restore original HTML source
+      - name: Verify original HTML source
         shell: powershell
-        run: |
-          cd tradingboard-windows
-          python -c "import base64,zlib,pathlib; pathlib.Path('TradingBoard_v12.html').write_bytes(zlib.decompress(base64.b64decode(pathlib.Path('TradingBoard_v12.html.zlib.b64').read_text())))"
+        run: python -c "from pathlib import Path; p=Path('tradingboard-windows/TradingBoard_v12.html'); print(f'HTML source OK: {p.stat().st_size} bytes') if p.exists() else (_ for _ in ()).throw(FileNotFoundError(p))"
       - name: Build desktop app
         shell: powershell
         run: |
