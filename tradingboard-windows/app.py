@@ -9,6 +9,7 @@ from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile, QWebEngin
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
 APP_NAME = "Backtest Lab"
+BUILD_REVISION = "2.0.0-source-preserving"
 APP_DIR_NAME = "BacktestLab"
 HTML_NAME = "TradingBoard_v12.html"
 
