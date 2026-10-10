@@ -37,6 +37,7 @@ import java.util.Locale
 private val Purple = Color(0xFF7357D9)
 private val Mint = Color(0xFF4BAF9B)
 private data class JournalTask(val text: String, val done: Boolean = false)
+private data class JournalEvent(val title: String, val date: String = "")
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +54,13 @@ private fun BulletJournalApp(context: Context) {
     val prefs = remember { context.getSharedPreferences("bullet_journal", Context.MODE_PRIVATE) }
     var theme by remember { mutableStateOf(prefs.getString("theme", "system") ?: "system") }
     var page by remember { mutableStateOf("امروز") }
+    var habitDraft by remember { mutableStateOf("") }
+    var eventDraft by remember { mutableStateOf("") }
+    var eventDate by remember { mutableStateOf("") }
+    var review by remember { mutableStateOf(prefs.getString("review", "") ?: "") }
+    val habits = remember { mutableStateListOf<String>().apply { try { val a=JSONArray(prefs.getString("habits","[]") ?: "[]"); for(i in 0 until a.length()) add(a.getString(i)) } catch (_:Exception) {} } }
+    val doneHabits = remember { mutableStateListOf<String>().apply { try { val a=JSONArray(prefs.getString("done_habits","[]") ?: "[]"); for(i in 0 until a.length()) add(a.getString(i)) } catch (_:Exception) {} } }
+    val events = remember { mutableStateListOf<JournalEvent>().apply { try { val a=JSONArray(prefs.getString("events","[]") ?: "[]"); for(i in 0 until a.length()) { val o=a.getJSONObject(i); add(JournalEvent(o.optString("title"),o.optString("date"))) } } catch (_:Exception) {} } }
     var note by remember { mutableStateOf(prefs.getString("note", "") ?: "") }
     var taskText by remember { mutableStateOf("") }
     val tasks = remember { mutableStateListOf<JournalTask>().apply {
@@ -67,7 +75,8 @@ private fun BulletJournalApp(context: Context) {
     val scheme = if(dark) darkColorScheme(primary=Color(0xFFB9A7FF), secondary=Color(0xFF8DD9C8), background=Color(0xFF15141B), surface=Color(0xFF211F29)) else lightColorScheme(primary=Purple, secondary=Mint, background=Color(0xFFF7F5FC), surface=Color.White)
     val backupLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if(uri!=null) try {
-            val root=JSONObject().put("app","بولت ژورنال").put("note",note)
+            val root=JSONObject().put("app","بولت ژورنال").put("note",note).put("review",review)
+            root.put("habits",JSONArray().apply { habits.forEach { put(it) } }).put("doneHabits",JSONArray().apply { doneHabits.forEach { put(it) } }).put("events",JSONArray().apply { events.forEach { put(JSONObject().put("title",it.title).put("date",it.date)) } })
             val arr=JSONArray(); tasks.forEach { arr.put(JSONObject().put("text",it.text).put("done",it.done)) }; root.put("tasks",arr).put("theme",theme)
             context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { it.write(root.toString(2)) }
         } catch (_:Exception) {}
@@ -75,15 +84,18 @@ private fun BulletJournalApp(context: Context) {
     val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if(uri!=null) try {
             val raw=context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
-            val obj=JSONObject(raw); note=obj.optString("note"); tasks.clear()
+            val obj=JSONObject(raw); note=obj.optString("note"); review=obj.optString("review"); habits.clear(); doneHabits.clear(); events.clear()
+            val ha=obj.optJSONArray("habits") ?: JSONArray(); for(i in 0 until ha.length()) habits.add(ha.getString(i))
+            val dh=obj.optJSONArray("doneHabits") ?: JSONArray(); for(i in 0 until dh.length()) doneHabits.add(dh.getString(i))
+            val ea=obj.optJSONArray("events") ?: JSONArray(); for(i in 0 until ea.length()) { val e=ea.getJSONObject(i); events.add(JournalEvent(e.optString("title"),e.optString("date"))) }
             val arr=obj.optJSONArray("tasks") ?: JSONArray()
             for(i in 0 until arr.length()) { val t=arr.getJSONObject(i); tasks.add(JournalTask(t.optString("text"),t.optBoolean("done"))) }
-            prefs.edit().putString("note",note).putString("tasks",JSONArray().apply { tasks.forEach { put(JSONObject().put("text",it.text).put("done",it.done)) } }.toString()).apply()
+            prefs.edit().putString("note",note).putString("review",review).putString("habits",JSONArray().apply { habits.forEach { put(it) } }.toString()).putString("done_habits",JSONArray().apply { doneHabits.forEach { put(it) } }.toString()).putString("events",JSONArray().apply { events.forEach { put(JSONObject().put("title",it.title).put("date",it.date)) } }.toString()).putString("tasks",JSONArray().apply { tasks.forEach { put(JSONObject().put("text",it.text).put("done",it.done)) } }.toString()).apply()
         } catch (_:Exception) {}
     }
     fun persist() {
         val arr=JSONArray(); tasks.forEach { arr.put(JSONObject().put("text",it.text).put("done",it.done)) }
-        prefs.edit().putString("tasks",arr.toString()).putString("note",note).putString("theme",theme).apply()
+        prefs.edit().putString("tasks",arr.toString()).putString("note",note).putString("theme",theme).putString("review",review).putString("habits",JSONArray().apply { habits.forEach { put(it) } }.toString()).putString("done_habits",JSONArray().apply { doneHabits.forEach { put(it) } }.toString()).putString("events",JSONArray().apply { events.forEach { put(JSONObject().put("title",it.title).put("date",it.date)) } }.toString()).apply()
     }
     val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if(granted) {
@@ -105,7 +117,7 @@ private fun BulletJournalApp(context: Context) {
                 colors=TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor=MaterialTheme.colorScheme.background)
             ) },
             bottomBar={ NavigationBar(containerColor=MaterialTheme.colorScheme.surface) {
-                listOf("امروز" to Icons.Default.Today,"کارها" to Icons.Default.CheckCircle,"یادداشت" to Icons.Default.EditNote,"ابزارها" to Icons.Default.Settings).forEach { (label,icon) ->
+                listOf("امروز" to Icons.Default.Today,"کارها" to Icons.Default.CheckCircle,"یادداشت" to Icons.Default.EditNote,"عادت‌ها" to Icons.Default.Favorite,"تقویم" to Icons.Default.CalendarMonth,"مرور" to Icons.Default.AutoAwesome,"ابزارها" to Icons.Default.Settings).forEach { (label,icon) ->
                     NavigationBarItem(selected=page==label,onClick={page=label},icon={Icon(icon,null)},label={Text(label,fontSize=11.sp)})
                 }
             } }
@@ -114,7 +126,7 @@ private fun BulletJournalApp(context: Context) {
                 item {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.SpaceBetween, verticalAlignment=Alignment.CenterVertically) {
                         Column {
-                            Text(when(page){"امروز"->"سلام، امروزت چطور است؟";"کارها"->"فهرست کارها";"یادداشت"->"ذهن‌نوشته‌ها";else->"تنظیمات و پشتیبان"},fontSize=22.sp,fontWeight=FontWeight.Bold)
+                            Text(when(page){"امروز"->"سلام، امروزت چطور است؟";"کارها"->"فهرست کارها";"یادداشت"->"ذهن‌نوشته‌ها";"عادت‌ها"->"عادت‌های کوچک، تغییرهای بزرگ";"تقویم"->"رویدادها و قرارها";"مرور"->"مرور و بازتاب روز";else->"تنظیمات و پشتیبان"},fontSize=22.sp,fontWeight=FontWeight.Bold)
                             Text(SimpleDateFormat("EEEE، d MMMM", Locale("fa")).format(Date()),color=MaterialTheme.colorScheme.onSurfaceVariant,fontSize=13.sp)
                         }
                         Box(Modifier.size(48.dp).background(Purple.copy(alpha=.12f),CircleShape),contentAlignment=Alignment.Center) { Icon(Icons.Default.AutoAwesome,null,tint=Purple,modifier=Modifier.size(25.dp)) }
@@ -147,6 +159,16 @@ private fun BulletJournalApp(context: Context) {
                         Button(onClick={if(recording){try{recorder?.stop();recorder?.release();recorder=null;recording=false;audioStatus="ضبط صوتی ذخیره شد."}catch(_:Exception){audioStatus="ضبط پایان نیافت."}}else micPermission.launch(Manifest.permission.RECORD_AUDIO)},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)) { Icon(if(recording) Icons.Default.Stop else Icons.Default.Mic,null); Spacer(Modifier.width(8.dp)); Text(if(recording)"پایان ضبط" else "ضبط یادداشت صوتی") }
                         Text(audioStatus,fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant)
                     } }
+                } else if(page=="عادت‌ها") {
+                    item { SectionCard("عادت تازه","کارهایی که می‌خواهی به‌طور منظم انجام بدهی") {
+                        Row(verticalAlignment=Alignment.CenterVertically) { OutlinedTextField(habitDraft,{habitDraft=it},modifier=Modifier.weight(1f),singleLine=true,placeholder={Text("مثلاً مطالعهٔ روزانه")},shape=RoundedCornerShape(14.dp)); IconButton(onClick={ if(habitDraft.isNotBlank() && habitDraft.trim() !in habits){habits.add(habitDraft.trim());habitDraft="";persist()} }) { Icon(Icons.Default.Add,"افزودن") } }
+                    } }
+                    item { SectionCard("امروز","برای ثبت عادت، دایره را علامت بزن") { if(habits.isEmpty()) Text("هنوز عادتی اضافه نکرده‌ای.") else habits.forEach { h -> Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) { Checkbox(h in doneHabits,{ checked -> if(checked) doneHabits.add(h) else doneHabits.remove(h); persist() }); Text(h,Modifier.weight(1f)); IconButton(onClick={habits.remove(h);doneHabits.remove(h);persist()}) { Icon(Icons.Default.Delete,"حذف",tint=MaterialTheme.colorScheme.error) } } } } }
+                } else if(page=="تقویم") {
+                    item { SectionCard("ثبت رویداد","عنوان و تاریخ را وارد کن") { OutlinedTextField(eventDraft,{eventDraft=it},modifier=Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("مثلاً جلسه یا قرار")},shape=RoundedCornerShape(14.dp)); OutlinedTextField(eventDate,{eventDate=it},modifier=Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("تاریخ (مثلاً ۱۴۰۵/۰۷/۱۸)")},shape=RoundedCornerShape(14.dp)); Button(onClick={if(eventDraft.isNotBlank()){events.add(JournalEvent(eventDraft.trim(),eventDate.trim()));eventDraft="";eventDate="";persist()}},modifier=Modifier.fillMaxWidth()) { Icon(Icons.Default.Add,null); Spacer(Modifier.width(8.dp)); Text("ثبت رویداد") } } }
+                    item { SectionCard("رویدادهای ثبت‌شده","") { if(events.isEmpty()) Text("هنوز رویدادی ثبت نشده است.") else events.forEach { e -> Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) { Column(Modifier.weight(1f)) { Text(e.title,fontWeight=FontWeight.SemiBold); if(e.date.isNotBlank()) Text(e.date,fontSize=12.sp,color=MaterialTheme.colorScheme.onSurfaceVariant) }; IconButton(onClick={events.remove(e);persist()}) { Icon(Icons.Default.Delete,"حذف",tint=MaterialTheme.colorScheme.error) } } } } }
+                } else if(page=="مرور") {
+                    item { SectionCard("بازتاب روز","چه چیزی خوب پیش رفت؟ چه چیزی را فردا بهتر می‌کنی؟") { OutlinedTextField(review,{review=it;persist()},modifier=Modifier.fillMaxWidth().heightIn(min=220.dp),placeholder={Text("امروز بابت چه چیزی خوشحالی؟ چه چیزی یاد گرفتی؟")},shape=RoundedCornerShape(16.dp)); Text("انجام‌شده‌ها: ${tasks.count{it.done}} از ${tasks.size} کار",fontWeight=FontWeight.SemiBold); Text("عادت‌های امروز: ${doneHabits.size} از ${habits.size}",fontWeight=FontWeight.SemiBold) } }
                 } else {
                     item { SectionCard("ظاهر برنامه","پوستهٔ مورد علاقه‌ات را انتخاب کن") {
                         listOf("system" to "پیروی از سیستم","light" to "روشن","dark" to "تیره").forEach { (value,label) -> Row(Modifier.fillMaxWidth().clickable{theme=value;persist()}.padding(vertical=8.dp),verticalAlignment=Alignment.CenterVertically){RadioButton(theme==value,{theme=value;persist()}); Text(label)} }
