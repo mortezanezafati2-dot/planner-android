@@ -1,56 +1,38 @@
-name: Build Aria Assistant APK
+name: Build Bullet Journal APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, native-bullet-journal ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: 'platforms;android-35 build-tools;35.0.0'
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '8.11.1'
-
-      - name: Download Persian Vosk model
-        run: |
-          set -euo pipefail
-          rm -rf app/src/main/assets/model-fa /tmp/vosk-fa.zip /tmp/vosk-fa
-          mkdir -p app/src/main/assets
-          curl -L --fail --retry 4 --retry-delay 2             -o /tmp/vosk-fa.zip             https://alphacephei.com/vosk/models/vosk-model-small-fa-0.42.zip
-          mkdir -p /tmp/vosk-fa
-          unzip -q /tmp/vosk-fa.zip -d /tmp/vosk-fa
-          mv /tmp/vosk-fa/vosk-model-small-fa-0.42 app/src/main/assets/model-fa
-          uuidgen > app/src/main/assets/model-fa/uuid
-
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
-
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/aria-assistant-v3.apk
-
+        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/bullet-journal.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: aria-assistant-apk
-          path: app/build/outputs/apk/debug/aria-assistant-v3.apk
+          name: bullet-journal-apk
+          path: app/build/outputs/apk/debug/bullet-journal.apk
           if-no-files-found: error
