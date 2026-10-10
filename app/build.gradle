@@ -7,6 +7,7 @@ android {
     namespace 'ir.bulletjournal.app'
     compileSdk 35
     defaultConfig { applicationId 'ir.bulletjournal.app'; minSdk 26; targetSdk 35; versionCode 1; versionName '1.0.0' }
+    sourceSets { main { java { include 'ir/bulletjournal/app/**' } } }
     buildFeatures { compose true }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = '17' }
