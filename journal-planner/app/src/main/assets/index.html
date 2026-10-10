@@ -963,6 +963,13 @@ body.dark .dashboard-v33 .v33-symbol-focus,[data-theme="dark"] .dashboard-v33 .v
 @media(max-width:380px){.mobile-nav{width:calc(100vw - 18px);padding:5px;gap:3px;border-radius:20px}.mobile-nav button{min-height:51px;font-size:9px;gap:3px;padding:3px 1px}.mobile-nav button .mobile-nav-icon{width:31px;height:28px;font-size:17px;border-radius:10px}}
 @media(prefers-reduced-motion:reduce){.mobile-nav button,.mobile-nav button .mobile-nav-icon{transition:none!important}}
 
+
+/* Android WebView layout stability */
+html{width:100%;min-width:0;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{width:100%;min-width:0;overflow-x:hidden}
+#app,.app,.main{min-width:0;max-width:100%}
+img,video,canvas,svg{max-width:100%}
+input,textarea,select,button{max-width:100%;-webkit-text-size-adjust:100%}
 </style>
 </head>
 <body>
@@ -1542,5 +1549,5 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.ct
  catch(e){document.getElementById('app').innerHTML='<div style="padding:40px;font-family:sans-serif">خطا در راه‌اندازی برنامه. صفحه را یک‌بار تازه‌سازی کنید.</div>';console.error(e)}
 })();
 </script>
-</body>
+<script>(function(){function syncBars(){try{var bg=getComputedStyle(document.body).backgroundColor||'#ffffff';if(!bg||bg==='rgba(0, 0, 0, 0)')bg='#ffffff';var m=bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);var light=true;if(m)light=(0.299*+m[1]+0.587*+m[2]+0.114*+m[3])>150;if(window.PlannerNative&&window.PlannerNative.setSystemBars)window.PlannerNative.setSystemBars(bg,light)}catch(e){}}window.addEventListener('load',function(){syncBars();new MutationObserver(syncBars).observe(document.documentElement,{attributes:true,childList:true,subtree:true});setTimeout(syncBars,250);setTimeout(syncBars,1000)});window.addEventListener('storage',syncBars)})();</script></body>
 </html>

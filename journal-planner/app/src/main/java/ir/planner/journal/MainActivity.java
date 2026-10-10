@@ -32,6 +32,12 @@ public class MainActivity extends Activity {
         webView = new WebView(this);
         webView.setBackgroundColor(Color.WHITE);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setLoadWithOverviewMode(false);
+        webView.getSettings().setTextZoom(100);
+        webView.getSettings().setSupportZoom(false);
+        webView.getSettings().setBuiltInZoomControls(false);
+        webView.getSettings().setDisplayZoomControls(false);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setDatabaseEnabled(true);
         webView.getSettings().setAllowFileAccess(true);
